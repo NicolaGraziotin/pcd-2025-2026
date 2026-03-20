@@ -15,30 +15,30 @@ The game consists in a bidimensional board with a number of small balls and two 
 The number of small balls can be high (thousands). All balls can move and bounce,  against the border or each other. We consider elastic collisions and friction force, so that a moving ball stops after a while.  At the top of the board, in the corners, there are two circles representing holes. The objective of the game for the players (human and bot) is to kick the small balls in the holes, by throwing their own balls in a sequence of throws. 
 
 Details:
-- when a player puts a small ball in a hole, his/her score is incremented by one
-- if a small ball kicks another small balls in a hole, scores are not changed
-- the game ends when there are no more balls in the board and the winner is the player with the biggest score 
-- the game ends also if/when the ball of a player goes in a hole. In that case, the winner is the other player, in spite of the score.
-- to kick her/his ball, the human player can press keys - UP, DOWN, LEFT, RIGHT - to instantaneously update the velocity (simulating an impulse)
+- When a player puts a small ball in a hole, his/her score is incremented by one
+- If a small ball kicks another small balls in a hole, scores are not changed
+- The game ends when there are no more balls in the board and the winner is the player with the biggest score 
+- The game ends also if/when the ball of a player goes in a hole. In that case, the winner is the other player, in spite of the score.
+- To kick her/his ball, the human player can press keys - UP, DOWN, LEFT, RIGHT - to instantaneously update the velocity (simulating an impulse)
   - for instance, by pressing UP the velocity vector can be updated by adding the vector (0,1)
-- players (human and bot) play asynchronously
-- the score of the human and bot player is displayed somewhere: in the picture: in blue, on the left (human) and on the right (bot)
+- Players (human and bot) play asynchronously
+- The score of the human and bot player is displayed somewhere: in the picture: in blue, on the left (human) and on the right (bot)
 
 ### The Assignment
 
 Design and develop a concurrent version of `Poool`, in two different versions:
-1)  one based on Java **multithreaded programming**, using only default/platform threads;
-2)  a variant applying **Task-based** approach, using Java **Executor Framework**, where useful.
+1)  One based on Java **multithreaded programming**, using only default/platform threads;
+2)  A variant applying **Task-based** approach, using Java **Executor Framework**, where useful.
 
 
 The concurrent programs should be designed according the principles studied during the course, promoting modularity, encapsulation as well as performance, reactivity. Further remarks:
-- for active components/thread interaction, monitors must be used, with your own implementation (no lib support)
-- the behaviour of the bot is not meant to be smart, could be any
-- for every other aspect not specified, students are free to choose the best approach for them.
+- For active components/thread interaction, monitors must be used, with your own implementation (no lib support)
+- The behaviour of the bot is not meant to be smart, could be any
+- For every other aspect not specified, students are free to choose the best approach for them.
 
 Beside the source code, the assignment should contain a brief report, including:
-- a brief analsysis of the problem, focusing in particular those aspects that are relevant from a concurrent point of view
-- a brief description of the adopted design, the architecture (structure) and the behaviour
+- A brief analsysis of the problem, focusing in particular those aspects that are relevant from a concurrent point of view
+- A brief description of the adopted design, the architecture (structure) and the behaviour
   - for the behaviour, one or multiple Petri Nets can be used, choosing the proper level of abstraction
 - Performance tests to check and discuss: 
   - how much the concurrent version is better than a sequential one
