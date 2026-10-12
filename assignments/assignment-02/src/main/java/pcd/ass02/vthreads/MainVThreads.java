@@ -1,5 +1,7 @@
 package pcd.ass02.vthreads;
 
+import pcd.ass02.FSReport;
+
 /**
  * Usage: MainVThreads &lt;dir&gt; &lt;maxFS&gt; &lt;NB&gt;
  */

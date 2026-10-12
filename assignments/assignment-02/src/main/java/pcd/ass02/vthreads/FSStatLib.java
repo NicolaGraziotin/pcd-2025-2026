@@ -14,6 +14,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.LongAdder;
 
+import pcd.ass02.FSReport;
+
 /**
  * Virtual-threads FS stat library.
  *

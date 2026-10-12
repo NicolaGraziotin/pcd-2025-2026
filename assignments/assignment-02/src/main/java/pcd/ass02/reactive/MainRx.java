@@ -1,5 +1,7 @@
 package pcd.ass02.reactive;
 
+import pcd.ass02.FSReport;
+
 /**
  * Usage: MainRx &lt;dir&gt; &lt;maxFS&gt; &lt;NB&gt;
  */

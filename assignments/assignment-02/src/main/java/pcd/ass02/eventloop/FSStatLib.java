@@ -9,6 +9,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
 
+import pcd.ass02.FSReport;
+
 /**
  * Event-loop based FS stat library (Vert.x).
  *
