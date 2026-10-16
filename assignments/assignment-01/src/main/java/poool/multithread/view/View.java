@@ -1,5 +1,6 @@
 package poool.multithread.view;
 
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import poool.multithread.controller.ActiveController;
@@ -28,6 +29,18 @@ public class View implements PooolObserver {
 
     public void display() {
         SwingUtilities.invokeLater(() -> frame.setVisible(true));
+    }
+
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public void dispose() {
+        try {
+            SwingUtilities.invokeAndWait(frame::dispose);
+        } catch (Exception ex) {
+            frame.dispose();
+        }
     }
 
     @Override

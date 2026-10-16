@@ -66,11 +66,7 @@ public class ViewFrame extends JFrame implements KeyListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent ev) {
-                System.exit(0);
-            }
-
-            @Override
-            public void windowClosed(WindowEvent ev) {
+                // user-initiated close: quit the whole application
                 System.exit(0);
             }
         });

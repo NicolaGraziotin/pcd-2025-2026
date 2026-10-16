@@ -1,0 +1,96 @@
+package poool.multithread;
+
+import java.awt.Component;
+
+import poool.multithread.controller.ActiveController;
+import poool.multithread.controller.SimulationEngine;
+import poool.multithread.model.BoardConf;
+import poool.multithread.model.Bot;
+import poool.multithread.model.LargeBoardConf;
+import poool.multithread.model.MassiveBoardConf;
+import poool.multithread.model.MinimalBoardConf;
+import poool.multithread.model.PooolModel;
+import poool.multithread.view.ConfigDialog;
+import poool.multithread.view.View;
+import poool.multithread.view.ViewModel;
+
+/**
+ * A single game run: wires model, view, controller, simulation engine and bot
+ * together, waits for the game to finish and can then be shut down so that a
+ * new game (with a new configuration) can start.
+ */
+public class GameSession {
+
+    private final PooolModel model;
+    private final ActiveController controller;
+    private final SimulationEngine engine;
+    private final Bot bot;
+    private final View view;
+
+    public GameSession(ConfigDialog.ConfigSelection sel) {
+        BoardConf conf = switch (sel.board().toLowerCase()) {
+            case "minimal" -> new MinimalBoardConf();
+            case "massive" -> new MassiveBoardConf();
+            default -> new LargeBoardConf();
+        };
+        int workers = sel.workers() != null
+                ? sel.workers()
+                : Runtime.getRuntime().availableProcessors();
+
+        model = new PooolModel();
+        model.init(conf);
+
+        controller = new ActiveController(model);
+
+        var viewModel = new ViewModel();
+        view = new View(viewModel, controller, model.getBounds(), model.getHoles());
+        model.addObserver(view);
+
+        controller.start();
+
+        engine = new SimulationEngine(model, workers);
+        engine.start();
+
+        bot = new Bot(model, 1500);
+        bot.start();
+
+        view.display();
+
+        System.out.println("[ Poool ] board=" + conf.getClass().getSimpleName()
+                + ", smallBalls=" + model.getSmallBalls().size()
+                + ", workers=" + engine.getWorkerCount());
+        System.out.println("[ Poool ] Use the ARROW keys to throw the blue (human) ball.");
+    }
+
+    /** The game window, used as parent for the configuration popup. */
+    public Component frame() {
+        return view.getFrame();
+    }
+
+    /**
+     * Blocks until the game is over, then keeps the final board visible for a
+     * few seconds so the result can be read before going back to the
+     * configuration popup.
+     */
+    public void awaitGameOver() throws InterruptedException {
+        while (!model.isGameOver()) {
+            Thread.sleep(200);
+        }
+        Thread.sleep(4000);
+    }
+
+    /** Stops all the threads of this session and disposes the game window. */
+    public void shutdown() {
+        bot.interrupt();
+        engine.interrupt();
+        controller.interrupt();
+        try {
+            bot.join(2000);
+            engine.join(5000);
+            controller.join(2000);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        view.dispose();
+    }
+}
