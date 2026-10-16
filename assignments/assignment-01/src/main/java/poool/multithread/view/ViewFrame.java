@@ -2,10 +2,12 @@ package poool.multithread.view;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
@@ -40,8 +42,19 @@ public class ViewFrame extends JFrame implements KeyListener {
     public ViewFrame(ViewModel viewModel, ActiveController controller,
             Boundary bounds, List<Hole> holes) {
         setTitle("Poool - multithreaded version");
-        setSize(1200, 800);
+        // fixed-size window, fitted to the user screen while keeping the
+        // field aspect ratio, so no rendering distortion is needed
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        double aspect = (bounds.x1() - bounds.x0()) / (bounds.y1() - bounds.y0());
+        int w = (int) (screen.width * 0.9);
+        int h = (int) (w / aspect);
+        if (h > screen.height * 0.9) {
+            h = (int) (screen.height * 0.9);
+            w = (int) (h * aspect);
+        }
+        setSize(w, h);
         setResizable(false);
+        setLocationRelativeTo(null);
         panel = new VisualiserPanel(viewModel, bounds, holes);
         getContentPane().add(panel);
         this.controller = controller;
@@ -113,18 +126,12 @@ public class ViewFrame extends JFrame implements KeyListener {
             g2.clearRect(0, 0, getWidth(), getHeight());
 
             int w = getWidth();
-            int h = getHeight() - 100;
+            int h = getHeight();
+            // uniform scaling: window and field share the same aspect ratio
             double scale = Math.min(w / (bounds.x1() - bounds.x0()),
                     h / (bounds.y1() - bounds.y0()));
             double ox = (w - (bounds.x1() - bounds.x0()) * scale) / 2;
-            double oy = (h - (bounds.y1() - bounds.y0()) * scale) / 2 + 70;
-
-            // board border
-            g2.setColor(Color.BLACK);
-            g2.setStroke(new BasicStroke(2));
-            g2.drawRect((int) ox, (int) oy,
-                    (int) ((bounds.x1() - bounds.x0()) * scale),
-                    (int) ((bounds.y1() - bounds.y0()) * scale));
+            double oy = (h - (bounds.y1() - bounds.y0()) * scale) / 2;
 
             // holes
             g2.setColor(Color.BLACK);
@@ -159,24 +166,33 @@ public class ViewFrame extends JFrame implements KeyListener {
                 }
             }
 
-            // HUD
-            g2.setColor(Color.BLUE);
+            // HUD overlaid at the bottom, inside the game frame:
+            // translucent backdrop (no border) to keep it readable
+            g2.setColor(new Color(255, 255, 255, 190));
+            g2.fillRect(0, h - 90, w, 90);
+            int hudY = h - 58;
             g2.setFont(new Font("SansSerif", Font.BOLD, 16));
-            g2.drawString("Human: " + viewModel.getHumanScore(), 20, 30);
+            g2.setColor(Color.BLUE);
+            g2.drawString("Human: " + viewModel.getHumanScore(), 20, hudY);
+            String botScore = "Bot: " + viewModel.getBotScore();
             g2.setColor(Color.RED);
-            g2.drawString("Bot: " + viewModel.getBotScore(), w - 120, 30);
-            g2.setColor(Color.BLACK);
-            g2.setFont(new Font("SansSerif", Font.PLAIN, 13));
-            g2.drawString("Small balls left: " + viewModel.getBallsRemaining()
-                    + "   FPS: " + viewModel.getFps(), 20, 52);
-            g2.drawString("Arrows: throw the blue ball when stopped - Bot ball is red", 20, 70);
+            g2.drawString(botScore, w - 20 - g2.getFontMetrics().stringWidth(botScore), hudY);
 
             if (viewModel.isGameOver()) {
                 g2.setColor(Color.MAGENTA.darker());
-                g2.setFont(new Font("SansSerif", Font.BOLD, 28));
+                g2.setFont(new Font("SansSerif", Font.BOLD, 22));
                 String msg = "GAME OVER - " + viewModel.getWinner();
-                g2.drawString(msg, w / 2 - 300, 60);
+                int msgW = g2.getFontMetrics().stringWidth(msg);
+                g2.drawString(msg, (w - msgW) / 2, hudY);
             }
+
+            g2.setColor(Color.BLACK);
+            g2.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            int infoY = h - 30;
+            g2.drawString("Small balls left: " + viewModel.getBallsRemaining()
+                    + "   FPS: " + viewModel.getFps(), 20, infoY);
+            String help = "Arrows: throw the blue ball when stopped - Bot ball is red";
+            g2.drawString(help, w - 20 - g2.getFontMetrics().stringWidth(help), infoY);
         }
 
         private int[] toScreen(double x, double y, double ox, double oy, double scale) {
