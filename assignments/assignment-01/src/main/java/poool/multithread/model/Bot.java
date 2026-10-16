@@ -8,12 +8,13 @@ import java.util.Random;
  * periodically updates the model without any user intervention.
  *
  * <p>Behaviour (deliberately simple, as allowed by the assignment): whenever
- * the bot ball is almost stopped, the bot aims at the nearest small ball and
- * throws its own ball in that direction.
+ * the bot ball is fully stopped, the bot aims at the nearest small ball and
+ * throws its own ball in that direction. The stop-to-move rule is enforced
+ * atomically by the model, so throws requested while the ball is still moving
+ * are discarded.
  */
 public class Bot extends Thread {
 
-    private static final double STOPPED_THRESHOLD = 0.4;
     private static final double THROW_SPEED = 1.8;
 
     private final PooolModel model;
@@ -43,7 +44,7 @@ public class Bot extends Thread {
             return;
         }
         Ball botBall = model.getBotBall();
-        if (botBall.isHoled() || botBall.getVel().abs() > STOPPED_THRESHOLD) {
+        if (botBall.isHoled() || botBall.getVel().abs() > PooolModel.STOPPED_THRESHOLD) {
             return;
         }
         P2d from = botBall.getPos();

@@ -4,24 +4,27 @@ import poool.multithread.model.PooolModel;
 import poool.multithread.model.V2d;
 
 /**
- * Human kick command: adds the given impulse to the human ball velocity
- * (cf. assignment spec: pressing UP adds e.g. the vector (0,1)).
+ * Human kick command: throws the human ball in the given direction.
+ *
+ * <p>The model applies the throw only if the ball is fully stopped (see
+ * {@link PooolModel#kickHuman}); kicks issued while the ball is still moving
+ * are discarded.
  */
 public class KickCmd implements Cmd {
 
-    private final V2d impulse;
+    private final V2d velocity;
 
-    public KickCmd(V2d impulse) {
-        this.impulse = impulse;
+    public KickCmd(V2d velocity) {
+        this.velocity = velocity;
     }
 
     @Override
     public void execute(PooolModel model) {
-        model.kickHuman(impulse);
+        model.kickHuman(velocity);
     }
 
     @Override
     public String toString() {
-        return "KickCmd" + impulse;
+        return "KickCmd" + velocity;
     }
 }

@@ -17,6 +17,9 @@ import java.util.List;
  *
  * <p>Game rules implemented:
  * <ul>
+ *   <li>players (human and bot) can shoot only when their own ball is fully
+ *   stopped; any kick/throw requested while the ball is still moving is
+ *   discarded;</li>
  *   <li>a small ball falling into a hole is removed; if it was recently
  *   touched by a player ball, that player scores one point, otherwise the
  *   score is unchanged;</li>
@@ -28,6 +31,12 @@ public class PooolModel {
 
     /** Time window in which a touch still attributes the hole to a player. */
     private static final long SCORE_WINDOW_MS = 4000;
+
+    /**
+     * A player ball is considered stopped (and hence allowed to shoot again)
+     * when its speed is below this threshold.
+     */
+    public static final double STOPPED_THRESHOLD = 0.05;
 
     /** Immutable snapshot of a single ball, handed over to the view. */
     public record BallSnapshot(P2d pos, double radius, BallType type) {
@@ -79,25 +88,33 @@ public class PooolModel {
 
     /* ---------------- actions from the controller / bot ---------------- */
 
-    /** Human kick: the impulse is added to the current velocity. */
-    public synchronized void kickHuman(V2d impulse) {
-        if (!gameOver) {
-            humanBall.addImpulse(impulse);
+    /**
+     * Human kick: the ball is thrown in the given direction <i>only if it is
+     * fully stopped</i>, otherwise the command is silently discarded.
+     *
+     * @param velocity the velocity to set (direction and speed of the throw)
+     * @return true if the kick was applied, false if it was discarded
+     */
+    public synchronized boolean kickHuman(V2d velocity) {
+        if (gameOver || humanBall.getVel().abs() > STOPPED_THRESHOLD) {
+            return false;
         }
+        humanBall.setVelocity(velocity);
+        return true;
     }
 
-    /** Bot kick: the impulse is added to the current velocity. */
-    public synchronized void kickBot(V2d impulse) {
-        if (!gameOver) {
-            botBall.addImpulse(impulse);
+    /**
+     * Bot throw: the velocity is set outright, <i>only if the bot ball is
+     * fully stopped</i>, otherwise the command is silently discarded.
+     *
+     * @return true if the throw was applied, false if it was discarded
+     */
+    public synchronized boolean setBotVelocity(V2d v) {
+        if (gameOver || botBall.getVel().abs() > STOPPED_THRESHOLD) {
+            return false;
         }
-    }
-
-    /** Bot throw: the velocity is set outright. */
-    public synchronized void setBotVelocity(V2d v) {
-        if (!gameOver) {
-            botBall.setVelocity(v);
-        }
+        botBall.setVelocity(v);
+        return true;
     }
 
     /**

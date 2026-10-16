@@ -31,8 +31,8 @@ import poool.multithread.model.V2d;
  */
 public class ViewFrame extends JFrame implements KeyListener {
 
-    /** Impulse added to the human ball velocity at every key press. */
-    private static final double KICK_STEP = 0.5;
+    /** Speed of the human ball throw issued at every key press. */
+    private static final double KICK_SPEED = 1.5;
 
     private final VisualiserPanel panel;
     private final ActiveController controller;
@@ -77,10 +77,10 @@ public class ViewFrame extends JFrame implements KeyListener {
             return;
         }
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP -> controller.notifyNewCmd(new KickCmd(new V2d(0, KICK_STEP)));
-            case KeyEvent.VK_DOWN -> controller.notifyNewCmd(new KickCmd(new V2d(0, -KICK_STEP)));
-            case KeyEvent.VK_LEFT -> controller.notifyNewCmd(new KickCmd(new V2d(-KICK_STEP, 0)));
-            case KeyEvent.VK_RIGHT -> controller.notifyNewCmd(new KickCmd(new V2d(KICK_STEP, 0)));
+            case KeyEvent.VK_UP -> controller.notifyNewCmd(new KickCmd(new V2d(0, KICK_SPEED)));
+            case KeyEvent.VK_DOWN -> controller.notifyNewCmd(new KickCmd(new V2d(0, -KICK_SPEED)));
+            case KeyEvent.VK_LEFT -> controller.notifyNewCmd(new KickCmd(new V2d(-KICK_SPEED, 0)));
+            case KeyEvent.VK_RIGHT -> controller.notifyNewCmd(new KickCmd(new V2d(KICK_SPEED, 0)));
             default -> {
             }
         }
@@ -127,7 +127,7 @@ public class ViewFrame extends JFrame implements KeyListener {
                     (int) ((bounds.y1() - bounds.y0()) * scale));
 
             // holes
-            g2.setColor(Color.DARK_GRAY);
+            g2.setColor(Color.BLACK);
             for (Hole hole : holes) {
                 int[] c = toScreen(hole.center().x(), hole.center().y(), ox, oy, scale);
                 int r = (int) (hole.radius() * scale);
@@ -169,7 +169,7 @@ public class ViewFrame extends JFrame implements KeyListener {
             g2.setFont(new Font("SansSerif", Font.PLAIN, 13));
             g2.drawString("Small balls left: " + viewModel.getBallsRemaining()
                     + "   FPS: " + viewModel.getFps(), 20, 52);
-            g2.drawString("Arrows: kick human ball (blue) - Bot ball is red", 20, 70);
+            g2.drawString("Arrows: throw the blue ball when stopped - Bot ball is red", 20, 70);
 
             if (viewModel.isGameOver()) {
                 g2.setColor(Color.MAGENTA.darker());
