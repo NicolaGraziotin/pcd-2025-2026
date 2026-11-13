@@ -20,6 +20,8 @@ lazy val root = project
   .in(file("."))
   .settings(
     //name := "cluster",
+    Compile / mainClass := Some("ass04.Main"),
+    assembly / mainClass := Some("ass04.Main"),
     run / fork := true,
     assembly / assemblyOutputPath := baseDirectory.value / "target" / "cluster.jar",
     libraryDependencies ++= Seq(

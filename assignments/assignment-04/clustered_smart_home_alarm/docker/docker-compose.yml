@@ -1,0 +1,44 @@
+services:
+  # Seed node. Hosts the alarm controller; the keypad runs on node2.
+  seed:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    ports:
+      - "25520:25520"
+    environment:
+      CLUSTER_HOST: seed
+      CLUSTER_PORT: 25520
+      SEED_HOST: seed
+      SEED_PORT: 25520
+      CLUSTER_ROLES: controller
+
+  # Sensor + controller node: the controller can move here if seed dies.
+  node1:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    environment:
+      CLUSTER_HOST: node1
+      CLUSTER_PORT: 25520
+      SEED_HOST: seed
+      SEED_PORT: 25520
+      CLUSTER_ROLES: controller,sensor
+    depends_on:
+      - seed
+
+  # Sensor + keypad node: the keypad is on a different node from the controller.
+  node2:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    environment:
+      CLUSTER_HOST: node2
+      CLUSTER_PORT: 25520
+      SEED_HOST: seed
+      SEED_PORT: 25520
+      CLUSTER_ROLES: sensor,keypad
+    stdin_open: true
+    tty: true
+    depends_on:
+      - seed

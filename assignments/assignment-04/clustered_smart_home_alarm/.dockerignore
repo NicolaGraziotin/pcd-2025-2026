@@ -1,0 +1,7 @@
+.git
+.idea
+.metals
+target
+**/target
+tmp
+assignment_4_smart_home_alarm_cluster.md
