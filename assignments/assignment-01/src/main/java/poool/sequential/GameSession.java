@@ -43,7 +43,7 @@ public class GameSession {
         controller = new Controller(model);
 
         var viewModel = new ViewModel();
-        view = new View(viewModel, controller, model.getBounds(), model.getHoles());
+        view = new View(viewModel, controller, model.getBounds(), model.getHoles(), "sequential");
         view.getFrame().setTitle("Poool - sequential version");
         model.addObserver(view);
 

@@ -43,7 +43,7 @@ public class GameSession {
         controller = new ActiveController(model);
 
         var viewModel = new ViewModel();
-        view = new View(viewModel, controller, model.getBounds(), model.getHoles());
+        view = new View(viewModel, controller, model.getBounds(), model.getHoles(), "taskbased");
         model.addObserver(view);
 
         engine = new SimulationEngine(model, workers);

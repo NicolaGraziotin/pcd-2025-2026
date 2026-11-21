@@ -22,9 +22,9 @@ public class View implements PooolObserver {
     private final ViewFrame frame;
 
     public View(ViewModel viewModel, AController controller,
-            Boundary bounds, List<Hole> holes) {
+            Boundary bounds, List<Hole> holes, String mode) {
         this.viewModel = viewModel;
-        this.frame = new ViewFrame(viewModel, controller, bounds, holes);
+        this.frame = new ViewFrame(viewModel, controller, bounds, holes, mode);
     }
 
     public void display() {

@@ -39,8 +39,8 @@ public class ViewFrame extends JFrame implements KeyListener {
     private final AController controller;
 
     public ViewFrame(ViewModel viewModel, AController controller,
-            Boundary bounds, List<Hole> holes) {
-        setTitle("Poool - multithreaded version");
+            Boundary bounds, List<Hole> holes, String mode) {
+        setTitle("Poool - " + mode + " version");
         // fixed-size window, fitted to the user screen while keeping the
         // field aspect ratio, so no rendering distortion is needed
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
