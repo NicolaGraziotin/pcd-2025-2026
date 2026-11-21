@@ -1,14 +1,13 @@
-package poool.taskbased.controller;
+package poool.common.controller;
 
-import poool.taskbased.model.PooolModel;
-import poool.taskbased.model.V2d;
+import poool.common.model.PooolModel;
+import poool.common.model.V2d;
 
 /**
  * Human kick command: throws the human ball in the given direction.
  *
- * <p>The model applies the throw only if the ball is fully stopped (see
- * {@link PooolModel#kickHuman}); kicks issued while the ball is still moving
- * are discarded.
+ * <p>The model applies the throw only if the ball is fully stopped;
+ * kicks issued while the ball is still moving are discarded.
  */
 public class KickCmd implements Cmd {
 
@@ -28,4 +27,3 @@ public class KickCmd implements Cmd {
         return "KickCmd" + velocity;
     }
 }
-

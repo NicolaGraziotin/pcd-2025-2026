@@ -2,6 +2,11 @@ package poool.multithread.model;
 
 import java.util.Random;
 
+import poool.common.model.PooolModel;
+import poool.common.model.Ball;
+import poool.common.model.P2d;
+import poool.common.model.V2d;
+
 /**
  * Autonomous bot player, playing the same role as
  * {@code pcd.sketch02.model.AutonomousUpdater}: an independent thread that

@@ -6,12 +6,8 @@ import java.util.LinkedList;
  * Monitor-based implementation of {@link BoundedBuffer} using raw
  * wait/notify mechanisms.
  *
- * <p>It follows the same pattern shown in the course lab on monitors
- * ({@code pcd.lab05.monitors.BoundedBufferImplRaw}): condition
- * synchronisation is expressed with guarded {@code wait()} loops and a
+ * <p>Condition synchronisation is expressed with guarded {@code wait()} loops and a
  * {@code notifyAll()} on every state change.
- *
- * @param <Item> type of the buffered items
  */
 public class BoundedBufferImpl<Item> implements BoundedBuffer<Item> {
 

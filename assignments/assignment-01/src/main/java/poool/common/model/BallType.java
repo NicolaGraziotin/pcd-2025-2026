@@ -1,4 +1,4 @@
-package poool.taskbased.model;
+package poool.common.model;
 
 /**
  * Kind of ball on the board.
@@ -8,4 +8,3 @@ public enum BallType {
     HUMAN,
     BOT
 }
-

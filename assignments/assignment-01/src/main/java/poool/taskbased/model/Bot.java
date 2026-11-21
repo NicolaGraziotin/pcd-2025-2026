@@ -4,6 +4,10 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import poool.common.model.Ball;
+import poool.common.model.P2d;
+import poool.common.model.V2d;
+import poool.common.model.PooolModel;
 
 /**
  * Autonomous bot player: same behaviour as version 1 (whenever the bot ball

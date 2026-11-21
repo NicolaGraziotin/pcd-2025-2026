@@ -1,4 +1,4 @@
-package poool.taskbased.model;
+package poool.common.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,4 +46,3 @@ public class LargeBoardConf implements BoardConf {
         return balls;
     }
 }
-

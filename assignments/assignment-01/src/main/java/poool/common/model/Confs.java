@@ -1,4 +1,4 @@
-package poool.multithread.model;
+package poool.common.model;
 
 import java.util.List;
 

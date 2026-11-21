@@ -3,21 +3,17 @@ package poool.multithread.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import poool.multithread.model.Ball;
-import poool.multithread.model.PooolModel;
+import poool.common.model.Ball;
+import poool.common.model.PooolModel;
 import poool.multithread.util.Barrier;
 import poool.multithread.util.BarrierImpl;
 
 /**
  * Master of the parallel simulation: a dedicated thread running the main
  * game loop. At every step it rendezvouses with the persistent
- * {@link SimulationWorker}s on a shared reusable {@link Barrier} (4 hits per
- * step: start-move, end-move, start-collide, end-collide), moves the two
+ * {@link SimulationWorker}s on a shared reusable {@link Barrier}, moves the two
  * player balls itself while the workers move the small ones, then finalises
  * the step (human-vs-bot collision, FPS accounting, view notification).
- *
- * <p>Only default/platform threads are used, as required for version 1 of
- * the assignment.
  */
 public class SimulationEngine extends Thread {
 
@@ -98,7 +94,6 @@ public class SimulationEngine extends Thread {
                 }
             }
         } catch (InterruptedException ex) {
-            // termination request: stop the workers and exit
         } finally {
             for (SimulationWorker w : workers) {
                 w.interrupt();

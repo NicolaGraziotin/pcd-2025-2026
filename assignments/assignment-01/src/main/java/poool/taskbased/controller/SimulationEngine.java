@@ -7,8 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import poool.taskbased.model.Ball;
-import poool.taskbased.model.PooolModel;
+import poool.common.model.Ball;
+import poool.common.model.PooolModel;
 
 /**
  * Task-based simulation engine (assignment-01, version 2): instead of

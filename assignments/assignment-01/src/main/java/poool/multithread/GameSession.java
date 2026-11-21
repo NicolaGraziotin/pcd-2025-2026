@@ -2,17 +2,17 @@ package poool.multithread;
 
 import java.awt.Component;
 
+import poool.common.model.BoardConf;
+import poool.multithread.model.Bot;
+import poool.common.model.LargeBoardConf;
+import poool.common.model.MassiveBoardConf;
+import poool.common.model.MinimalBoardConf;
+import poool.common.model.PooolModel;
+import poool.common.view.ConfigDialog;
+import poool.common.view.View;
+import poool.common.view.ViewModel;
 import poool.multithread.controller.ActiveController;
 import poool.multithread.controller.SimulationEngine;
-import poool.multithread.model.BoardConf;
-import poool.multithread.model.Bot;
-import poool.multithread.model.LargeBoardConf;
-import poool.multithread.model.MassiveBoardConf;
-import poool.multithread.model.MinimalBoardConf;
-import poool.multithread.model.PooolModel;
-import poool.multithread.view.ConfigDialog;
-import poool.multithread.view.View;
-import poool.multithread.view.ViewModel;
 
 /**
  * A single game run: wires model, view, controller, simulation engine and bot

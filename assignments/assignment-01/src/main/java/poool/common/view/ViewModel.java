@@ -1,12 +1,11 @@
-package poool.multithread.view;
+package poool.common.view;
 
 import java.util.List;
 
-import poool.multithread.model.PooolModel;
+import poool.common.model.PooolModel;
 
 /**
- * View-side copy of the game state, mirroring
- * {@code pcd.sketch02.view.ViewModel}: it is updated from the immutable
+ * View-side copy of the game state: it is updated from the immutable
  * {@link PooolModel.GameSnapshot} and read by the Swing panel. All methods
  * are synchronised because updates come from the simulation thread while
  * reads happen on the event-dispatch thread.

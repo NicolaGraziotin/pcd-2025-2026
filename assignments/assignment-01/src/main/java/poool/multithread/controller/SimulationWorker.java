@@ -2,10 +2,10 @@ package poool.multithread.controller;
 
 import java.util.List;
 
-import poool.multithread.model.Ball;
-import poool.multithread.model.Boundary;
-import poool.multithread.model.Hole;
-import poool.multithread.model.PooolModel;
+import poool.common.model.Ball;
+import poool.common.model.Boundary;
+import poool.common.model.Hole;
+import poool.common.model.PooolModel;
 import poool.multithread.util.Barrier;
 
 /**

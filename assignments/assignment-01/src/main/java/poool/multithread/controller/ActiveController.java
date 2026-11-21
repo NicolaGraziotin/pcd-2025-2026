@@ -1,18 +1,19 @@
 package poool.multithread.controller;
 
-import poool.multithread.model.PooolModel;
 import poool.multithread.util.BoundedBuffer;
 import poool.multithread.util.BoundedBufferImpl;
+import poool.common.controller.Cmd;
+import poool.common.model.PooolModel;
+import poool.common.controller.AController;
 
 /**
- * Active controller, mirroring
- * {@code pcd.sketch02.controller.ActiveController}: it serialises the
+ * Active controller, it serialises the
  * asynchronous human input coming from the view. Key presses are enqueued as
  * {@link Cmd}s into a bounded-buffer monitor and executed one at a time on
  * the model by this dedicated thread, so the Swing event-dispatch thread is
  * never blocked and commands are applied in order.
  */
-public class ActiveController extends Thread {
+public class ActiveController extends Thread implements AController {
 
     private final BoundedBuffer<Cmd> cmdBuffer;
     private final PooolModel model;

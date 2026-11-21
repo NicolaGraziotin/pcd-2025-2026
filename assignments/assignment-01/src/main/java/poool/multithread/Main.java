@@ -2,11 +2,10 @@ package poool.multithread;
 
 import java.awt.Component;
 
-import poool.multithread.view.ConfigDialog;
+import poool.common.view.ConfigDialog;
 
 /**
- * Entry point of the multithreaded version of the Poool game (assignment-01,
- * version 1: plain multithreaded programming with default/platform threads).
+ * Entry point of the multithreaded version of the Poool game.
  *
  * <p>Flow: a configuration popup ({@link ConfigDialog}) is shown first (and
  * again after every finished game); each confirmed selection starts a new

@@ -1,9 +1,7 @@
 package poool.multithread.util;
 
 /**
- * Monitor-based reusable barrier implemented with raw wait/notify mechanisms,
- * following the style of the barrier exercise in the course lab on monitors
- * ({@code pcd.lab05.monitors.ex_barrier}).
+ * Monitor-based reusable barrier implemented with raw wait/notify mechanisms.
  *
  * <p>A generation counter distinguishes successive barrier rounds, so that
  * threads waking up spuriously or late cannot confuse the current round with

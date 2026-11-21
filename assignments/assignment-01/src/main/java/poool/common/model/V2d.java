@@ -1,7 +1,7 @@
-package poool.taskbased.model;
+package poool.common.model;
 
 /**
- * Immutable 2D vector, adapted from {@code pcd.sketch01.V2d}.
+ * Immutable 2D vector.
  */
 public record V2d(double x, double y) {
 
@@ -35,4 +35,3 @@ public record V2d(double x, double y) {
         return "V2d(" + x + "," + y + ")";
     }
 }
-

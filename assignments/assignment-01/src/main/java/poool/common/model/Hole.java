@@ -1,4 +1,4 @@
-package poool.taskbased.model;
+package poool.common.model;
 
 /**
  * A hole on the board: any ball whose centre falls inside the hole circle is
@@ -12,4 +12,3 @@ public record Hole(P2d center, double radius) {
         return Math.hypot(dx, dy) < radius;
     }
 }
-

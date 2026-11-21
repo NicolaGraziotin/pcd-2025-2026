@@ -2,7 +2,7 @@ package poool.taskbased;
 
 import java.awt.Component;
 
-import poool.taskbased.view.ConfigDialog;
+import poool.common.view.ConfigDialog;
 
 /**
  * Entry point of the task-based version of the Poool game (assignment-01,

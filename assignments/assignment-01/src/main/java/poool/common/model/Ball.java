@@ -1,4 +1,4 @@
-package poool.multithread.model;
+package poool.common.model;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -6,20 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A ball on the board.
  *
- * <p>Physics (friction, boundary bounces, elastic collisions) is adapted from
- * {@code pcd.sketch01.Ball}.
- *
  * <p>Concurrency: every ball owns its own lock (the {@code Ball} instance
  * itself). All state reads/writes go through {@code synchronized} methods, so
  * several simulation workers can safely operate on disjoint or overlapping
  * sets of balls. Pairwise collision resolution acquires the two involved ball
- * locks in increasing {@code id} order, hence no deadlock can arise. The
- * locking discipline is:
- * <ul>
- *   <li>model monitor -&gt; ball lock is allowed (e.g. scoring, snapshots);</li>
- *   <li>ball lock -&gt; model monitor is <i>never</i> acquired while holding
- *   a ball lock.</li>
- * </ul>
+ * locks in increasing {@code id} order, hence no deadlock can arise.
  */
 public class Ball {
 
@@ -174,8 +165,7 @@ public class Ball {
 
     /**
      * Resolves the elastic collision between two balls, updating positions
-     * (overlap removal) and velocities (impulse). Same physics as
-     * {@code pcd.sketch01.Ball#resolveCollision}.
+     * (overlap removal) and velocities (impulse).
      *
      * <p>In addition, when a player ball hits a small ball, the small ball
      * records which player touched it last, so that a subsequent hole can be

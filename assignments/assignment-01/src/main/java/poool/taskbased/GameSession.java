@@ -4,15 +4,15 @@ import java.awt.Component;
 
 import poool.taskbased.controller.ActiveController;
 import poool.taskbased.controller.SimulationEngine;
-import poool.taskbased.model.BoardConf;
+import poool.common.model.BoardConf;
 import poool.taskbased.model.Bot;
-import poool.taskbased.model.LargeBoardConf;
-import poool.taskbased.model.MassiveBoardConf;
-import poool.taskbased.model.MinimalBoardConf;
-import poool.taskbased.model.PooolModel;
-import poool.taskbased.view.ConfigDialog;
-import poool.taskbased.view.View;
-import poool.taskbased.view.ViewModel;
+import poool.common.model.LargeBoardConf;
+import poool.common.model.MassiveBoardConf;
+import poool.common.model.MinimalBoardConf;
+import poool.common.model.PooolModel;
+import poool.common.view.ConfigDialog;
+import poool.common.view.ViewModel;
+import poool.common.view.View;
 
 /**
  * A single game run: wires model, view, controller, simulation engine and bot

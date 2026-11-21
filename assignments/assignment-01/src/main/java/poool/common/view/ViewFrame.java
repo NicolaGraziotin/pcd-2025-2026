@@ -1,4 +1,4 @@
-package poool.multithread.view;
+package poool.common.view;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -17,17 +17,16 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import poool.multithread.controller.ActiveController;
-import poool.multithread.controller.KickCmd;
-import poool.multithread.model.BallType;
-import poool.multithread.model.Boundary;
-import poool.multithread.model.Hole;
-import poool.multithread.model.PooolModel;
-import poool.multithread.model.V2d;
+import poool.common.controller.KickCmd;
+import poool.common.model.BallType;
+import poool.common.model.Boundary;
+import poool.common.model.Hole;
+import poool.common.model.PooolModel;
+import poool.common.model.V2d;
+import poool.common.controller.AController;
 
 /**
- * Main window, mirroring {@code pcd.sketch02.view.ViewFrame}: it renders the
- * board (adapted from {@code pcd.sketch01.ViewFrame}) and asynchronously
+ * Main window: it renders the board and asynchronously
  * forwards the human input (arrow keys) to the {@link ActiveController} as
  * {@link KickCmd}s.
  */
@@ -37,9 +36,9 @@ public class ViewFrame extends JFrame implements KeyListener {
     private static final double KICK_SPEED = 1.5;
 
     private final VisualiserPanel panel;
-    private final ActiveController controller;
+    private final AController controller;
 
-    public ViewFrame(ViewModel viewModel, ActiveController controller,
+    public ViewFrame(ViewModel viewModel, AController controller,
             Boundary bounds, List<Hole> holes) {
         setTitle("Poool - multithreaded version");
         // fixed-size window, fitted to the user screen while keeping the

@@ -1,19 +1,16 @@
-package poool.multithread.model;
+package poool.common.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The game model, playing the same role as {@code pcd.sketch02.model.Counter}
- * in the MVC sketch: it is the shared state observed by the view and updated
+ * The game model: it is the shared state observed by the view and updated
  * by the active components (simulation workers, controller, bot).
  *
  * <p>It is designed as a <i>monitor</i>: every public method is
  * {@code synchronized}, so all compound state transitions (hole capture,
  * scoring, game-over detection) are atomic. Individual balls additionally
- * guard their own kinematic state with per-ball locks (see {@link Ball});
- * the locking discipline is "model monitor first, ball locks second", never
- * the other way round.
+ * guard their own kinematic state with per-ball locks;
  *
  * <p>Game rules implemented:
  * <ul>
@@ -91,9 +88,6 @@ public class PooolModel {
     /**
      * Human kick: the ball is thrown in the given direction <i>only if it is
      * fully stopped</i>, otherwise the command is silently discarded.
-     *
-     * @param velocity the velocity to set (direction and speed of the throw)
-     * @return true if the kick was applied, false if it was discarded
      */
     public synchronized boolean kickHuman(V2d velocity) {
         if (gameOver || humanBall.getVel().abs() > STOPPED_THRESHOLD) {
@@ -106,8 +100,6 @@ public class PooolModel {
     /**
      * Bot throw: the velocity is set outright, <i>only if the bot ball is
      * fully stopped</i>, otherwise the command is silently discarded.
-     *
-     * @return true if the throw was applied, false if it was discarded
      */
     public synchronized boolean setBotVelocity(V2d v) {
         if (gameOver || botBall.getVel().abs() > STOPPED_THRESHOLD) {
@@ -210,7 +202,7 @@ public class PooolModel {
     /**
      * Builds an immutable snapshot for the view. The ball list is never
      * structurally modified after {@link #init} (holed balls are flagged, not
-     * removed), so iterating it here is safe.
+     * removed).
      */
     public synchronized GameSnapshot getSnapshot() {
         var balls = new ArrayList<BallSnapshot>(smallBalls.size() + 2);
@@ -231,7 +223,7 @@ public class PooolModel {
                 remainingSmallBalls(), gameOver, winner, fps);
     }
 
-    /** Notifies the observers (typically: the view) that a step completed. */
+    /** Notifies the observers that a step completed. */
     public void fireUpdate() {
         List<PooolObserver> copy;
         synchronized (this) {

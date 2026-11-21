@@ -1,4 +1,4 @@
-package poool.taskbased.model;
+package poool.common.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,4 +39,3 @@ public class MinimalBoardConf implements BoardConf {
         return balls;
     }
 }
-

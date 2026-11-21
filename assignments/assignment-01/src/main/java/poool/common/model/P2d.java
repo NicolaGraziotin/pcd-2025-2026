@@ -1,7 +1,7 @@
-package poool.taskbased.model;
+package poool.common.model;
 
 /**
- * Immutable 2D point, adapted from {@code pcd.sketch01.P2d}.
+ * Immutable 2D point.
  */
 public record P2d(double x, double y) {
 
@@ -18,4 +18,3 @@ public record P2d(double x, double y) {
         return "P2d(" + x + "," + y + ")";
     }
 }
-

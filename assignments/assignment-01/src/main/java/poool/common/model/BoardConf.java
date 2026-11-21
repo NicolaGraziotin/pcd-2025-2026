@@ -1,10 +1,9 @@
-package poool.multithread.model;
+package poool.common.model;
 
 import java.util.List;
 
 /**
- * Initial configuration of the board, in the spirit of
- * {@code pcd.sketch01.BoardConf}, extended with the bot ball and the holes
+ * Initial configuration of the board, extended with the bot ball and the holes
  * required by the Poool game.
  */
 public interface BoardConf {

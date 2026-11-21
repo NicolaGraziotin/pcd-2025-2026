@@ -1,4 +1,4 @@
-package poool.multithread.view;
+package poool.common.view;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -101,8 +101,6 @@ public class ConfigDialog extends JDialog {
     /**
      * Shows the modal popup centred over {@code parent} (or over the screen
      * if {@code parent} is null).
-     *
-     * @return the user selection, or null if the dialog was cancelled/closed
      */
     public static ConfigSelection showDialog(Component parent) {
         Window window = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;

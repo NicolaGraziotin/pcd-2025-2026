@@ -1,18 +1,18 @@
-package poool.multithread.view;
+package poool.common.view;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import poool.multithread.controller.ActiveController;
-import poool.multithread.model.Boundary;
-import poool.multithread.model.Hole;
-import poool.multithread.model.PooolModel;
-import poool.multithread.model.PooolObserver;
+import poool.common.model.Boundary;
+import poool.common.model.Hole;
+import poool.common.model.PooolModel;
+import poool.common.model.PooolObserver;
+import poool.common.controller.AController;
 
 import java.util.List;
 
 /**
- * View, mirroring {@code pcd.sketch02.view.View}: it observes the model and,
+ * View: it observes the model and,
  * on every update, copies the immutable snapshot into the {@link ViewModel}
  * and asks the frame to repaint.
  */
@@ -21,7 +21,7 @@ public class View implements PooolObserver {
     private final ViewModel viewModel;
     private final ViewFrame frame;
 
-    public View(ViewModel viewModel, ActiveController controller,
+    public View(ViewModel viewModel, AController controller,
             Boundary bounds, List<Hole> holes) {
         this.viewModel = viewModel;
         this.frame = new ViewFrame(viewModel, controller, bounds, holes);

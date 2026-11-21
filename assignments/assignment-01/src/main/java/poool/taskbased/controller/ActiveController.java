@@ -6,7 +6,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import poool.taskbased.model.PooolModel;
+import poool.common.model.PooolModel;
+import poool.common.controller.Cmd;
+import poool.common.controller.AController;
 
 /**
  * Task-based active controller: the asynchronous human input coming from the
@@ -16,7 +18,7 @@ import poool.taskbased.model.PooolModel;
  * consumer thread and the hand-written bounded-buffer monitor of version 1
  * with standard Executor Framework constructs.
  */
-public class ActiveController {
+public class ActiveController implements AController {
 
     private final BlockingQueue<Cmd> queue = new LinkedBlockingQueue<>(100);
     private final ExecutorService executor;
