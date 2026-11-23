@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
@@ -31,18 +32,41 @@ import pcd.ass02.FSReport;
  */
 public class FSStatLib {
 
+    /** Minimum interval between two GUI updates. */
+    private static final long UPDATE_INTERVAL_MS = 100;
+
     public Single<FSReport> getFSReport(String rootDir, long maxFS, int nb) {
         try {
             checkArgs(rootDir, maxFS, nb);
         } catch (IllegalArgumentException e) {
             return Single.error(e);
         }
-        return listFilesRecursive(rootDir)
-            .flatMapSingle(path -> statSize(path).onErrorReturnItem(-1L))
-            .filter(size -> size >= 0)
+        return fileSizes(rootDir)
             .collect(() -> new Accumulator(rootDir, maxFS, nb),
                     Accumulator::add)
             .map(Accumulator::snapshot);
+    }
+
+    /**
+     * Live report for the GUI: a snapshot of the statistics at most every
+     * {@link #UPDATE_INTERVAL_MS} while the scan runs, plus the final one.
+     * Disposing the subscription stops the scan.
+     */
+    public Flowable<FSReport> getFSReportUpdates(String rootDir, long maxFS, int nb) {
+        return Flowable.defer(() -> {
+            checkArgs(rootDir, maxFS, nb);
+            return fileSizes(rootDir)
+                .scanWith(() -> new Accumulator(rootDir, maxFS, nb),
+                        (acc, size) -> { acc.add(size); return acc; })
+                .map(Accumulator::snapshot)
+                .sample(UPDATE_INTERVAL_MS, TimeUnit.MILLISECONDS, true);
+        });
+    }
+
+    private Flowable<Long> fileSizes(String rootDir) {
+        return listFilesRecursive(rootDir)
+            .flatMapSingle(path -> statSize(path).onErrorReturnItem(-1L))
+            .filter(size -> size >= 0);
     }
 
     Flowable<Path> listFilesRecursive(String rootDir) {

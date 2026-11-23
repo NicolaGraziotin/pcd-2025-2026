@@ -64,12 +64,19 @@ public class GuiRx {
             startBtn.setEnabled(false);
             stopBtn.setEnabled(true);
             area.setText("Scanning " + dir + " ...\n");
-            current[0] = lib.getFSReport(dir, maxFS, nb)
+            current[0] = lib.getFSReportUpdates(dir, maxFS, nb)
                 .subscribe(
-                    r -> SwingUtilities.invokeLater(() ->
-                        area.setText("Total files: " + r.totalFiles() + "\n" + r)),
+                    r -> SwingUtilities.invokeLater(() -> {
+                        if (current[0] == null || current[0].isDisposed()) return;
+                        area.setText("Total files: " + r.getTotalFiles() + "\n" + r);
+                    }),
                     err -> SwingUtilities.invokeLater(() -> {
-                        area.setText("STOPPED/FAILED: " + err + "\n");
+                        area.append("\nFAILED: " + err + "\n");
+                        startBtn.setEnabled(true);
+                        stopBtn.setEnabled(false);
+                    }),
+                    () -> SwingUtilities.invokeLater(() -> {
+                        area.append("\n--- scan complete ---\n");
                         startBtn.setEnabled(true);
                         stopBtn.setEnabled(false);
                     })
@@ -78,6 +85,9 @@ public class GuiRx {
 
         stopBtn.addActionListener(e -> {
             if (current[0] != null && !current[0].isDisposed()) current[0].dispose();
+            area.append("\n--- scan stopped by user ---\n");
+            startBtn.setEnabled(true);
+            stopBtn.setEnabled(false);
         });
 
         f.setVisible(true);
