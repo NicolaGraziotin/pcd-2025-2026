@@ -11,7 +11,6 @@ ThisBuild / scalaVersion := scala3Version
 ThisBuild / libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
   "org.apache.pekko" %% "pekko-actor-typed" % PekkoVersion,
-  "org.apache.pekko" %% "pekko-actor-testkit-typed" % PekkoVersion % Test,
   "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
   "ch.qos.logback" % "logback-classic" % logbackVersion
 )
