@@ -213,10 +213,6 @@ diversi.
 
 ## 3. Versione sequenziale
 
-**File principali:** `poool/sequential/Main.java`, `GameSession.java`,
-`controller/SimulationEngine.java`, `controller/Controller.java`,
-`model/Bot.java`, `util/CommandQueue.java`.
-
 ### 3.1 Struttura
 
 La versione sequenziale non crea thread di gioco:
@@ -256,11 +252,6 @@ non esegue mai il calcolo.
 ---
 
 ## 4. Versione multithread
-
-**File principali:** `poool/multithread/GameSession.java`,
-`controller/SimulationEngine.java`, `controller/SimulationWorker.java`,
-`controller/ActiveController.java`, `util/BarrierImpl.java`,
-`util/BoundedBufferImpl.java`, `model/Bot.java`.
 
 ### 4.1 Attori e thread
 
@@ -368,10 +359,6 @@ e limita lo scaling massimo.
 
 ## 5. Versione task-based
 
-**File principali:** `poool/taskbased/GameSession.java`,
-`controller/SimulationEngine.java`, `controller/ActiveController.java`,
-`model/Bot.java`.
-
 ### 5.1 Executor Framework
 
 La versione task-based sostituisce i thread persistenti con un
@@ -452,165 +439,110 @@ rappresenta un attore o un task in una fase, non una pallina.
 
 ### 6.1 Passo della versione multithread
 
+Per non appesantire il modello, la rete rappresenta solo la sequenza delle fasi di
+un passo; ogni place contiene `N+1` gettoni, cioè i worker più il master. Le place
+`B1` e `B2` rappresentano i due punti di sincronizzazione del passo (fine move e fine
+collisioni): la transizione successiva è abilitata solo quando tutti gli `N+1`
+attori sono arrivati.
+
 ```mermaid
 flowchart LR
     classDef trans fill:#2f3640,stroke:#2f3640,color:#fff;
 
-    PE(("PE engine ready<br/>(1)"))
-    PW(("PW workers ready<br/>(N)"))
-    PM(("PM workers moving<br/>(N)"))
-    PP(("PP engine moving players<br/>(1)"))
-    WD(("WD workers move done<br/>(N)"))
-    BM(("BM barrier move<br/>(0..N+1)"))
-    CW(("CW workers colliding<br/>(N)"))
-    CE(("CE engine waiting collide<br/>(1)"))
-    CD(("CD workers collide done<br/>(N)"))
-    BC(("BC barrier collide<br/>(0..N+1)"))
-    PF(("PF finalise + sleep<br/>(1)"))
+    P0(("P0 pronti<br/>(N+1)"))
+    P1(("P1 move<br/>(N+1)"))
+    B1(("B1 barriera move<br/>(0..N+1)"))
+    P2(("P2 collisioni<br/>(N+1)"))
+    B2(("B2 barriera collisioni<br/>(0..N+1)"))
+    P3(("P3 finalizza + sleep<br/>(N+1)"))
 
-    T0["T0 start step"]:::trans
-    T1["T1 worker move end"]:::trans
-    T2["T2 engine move end"]:::trans
-    T3["T3 workers reach barrier"]:::trans
-    T4["T4 barrier open: collide"]:::trans
-    T5["T5 worker collide end"]:::trans
-    T6["T6 workers reach barrier"]:::trans
-    T7["T7 engine reaches barrier"]:::trans
-    T8["T8 barrier open: finalise"]:::trans
-    T9["T9 next step"]:::trans
+    T0["T0 avvia il passo"]:::trans
+    T1["T1 fine move"]:::trans
+    T2["T2 via libera collisioni"]:::trans
+    T3["T3 fine collisioni"]:::trans
+    T4["T4 via libera finalizzazione"]:::trans
+    T5["T5 prossimo passo"]:::trans
 
-    PE --> T0
-    PW -->|N| T0
-    T0 -->|N| PM
-    T0 --> PP
-    PM -->|N| T1
-    T1 -->|N| WD
-    PP --> T2
-    T2 --> BM
-    WD -->|N| T3
-    T3 -->|N| BM
-    BM -->|N+1| T4
-    T4 -->|N| CW
-    T4 --> CE
-    CW -->|N| T5
-    T5 -->|N| CD
-    CD -->|N| T6
-    T6 -->|N| BC
-    CE --> T7
-    T7 --> BC
-    BC -->|N+1| T8
-    T8 --> PF
-    T8 -->|N| PW
-    PF --> T9
-    T9 --> PE
+    P0 -->|N+1| T0
+    T0 -->|N+1| P1
+    P1 -->|N+1| T1
+    T1 -->|N+1| B1
+    B1 -->|N+1| T2
+    T2 -->|N+1| P2
+    P2 -->|N+1| T3
+    T3 -->|N+1| B2
+    B2 -->|N+1| T4
+    T4 -->|N+1| P3
+    P3 -->|N+1| T5
+    T5 -->|N+1| P0
 ```
 
-Lettura:
+- `T0` avvia il move: i worker muovono le palline piccole, il master le due palline
+  giocatore.
+- `T1` porta tutti alla barriera `B1`; solo con `N+1` gettoni `T2` apre la fase di
+  collisione.
+- `T3` porta alla barriera `B2`; `T4` fa partire la finalizzazione single-thread
+  (collisione umano-bot, FPS, notifica, sonno).
+- In `P3` i worker sono fermi in attesa del passo successivo, mentre il master
+  finalizza; per questo la place li rappresenta insieme.
 
-- `T0` avvia il passo: un gettone va ai worker in move (`PM`) e uno al master in
-  move giocatore (`PP`).
-- `T2` e `T3` depositano i gettoni nella place di barriera `BM`; `T4` è abilitata
-  solo con `N+1` gettoni, cioè quando tutti i worker e il master sono arrivati.
-- `T4` apre la fase di collisione: `N` gettoni ai worker, uno al master in attesa.
-- `T8` è la seconda barriera: quando ci sono `N+1` gettoni, il master finalizza e i
-  worker tornano disponibili per il passo successivo.
-- Il gettone in `PF` rappresenta la finalizzazione single-thread (collisione
-  umano-bot, FPS, notifica) e il sonno fino al target di frame.
-
-La rete è **viva** (nessuna transizione resta definitivamente disabilitata) e
-**sicura** sulle place di barriera (capacità `N+1`). L'assenza di un posto che
-rappresenti un lock conteso riflette la scelta di progetto: il deadlock è escluso
-dall'ordine totale degli `id` dei lock, non da una risorsa unica.
+La rete è viva e sicura sui due punti di sincronizzazione (capacità `N+1`). Il
+deadlock sui lock delle palline non compare perché è escluso dall'ordine totale
+degli `id`, non da una risorsa unica.
 
 ### 6.2 Passo della versione task-based
 
+La rete è la stessa astrazione, ma `invokeAll` sostituisce la barriera: quando tutti
+i task di una fase hanno depositato il gettone, la transizione di join è abilitata e
+il master può passare alla fase successiva.
+
 ```mermaid
 flowchart LR
     classDef trans fill:#2f3640,stroke:#2f3640,color:#fff;
 
-    PE(("PE engine ready<br/>(1)"))
-    PM(("PM move tasks running<br/>(N)"))
-    PP(("PP engine moving players<br/>(1)"))
-    BM(("BM move join<br/>(0..N+1)"))
-    CT(("CT collision tasks running<br/>(M)"))
-    CE(("CE engine in invokeAll<br/>(1)"))
-    BC(("BC collision join<br/>(0..M)"))
-    PF(("PF finalise + sleep<br/>(1)"))
+    P0(("P0 engine pronto<br/>(1)"))
+    P1(("P1 move<br/>(N+1)"))
+    B1(("B1 join move<br/>(0..N+1)"))
+    P2(("P2 collisioni<br/>(M+1)"))
+    B2(("B2 join collisioni<br/>(0..M+1)"))
+    P3(("P3 finalizza + sleep<br/>(1)"))
 
     T0["T0 submit move tasks"]:::trans
-    T1["T1 move task ends"]:::trans
-    T2["T2 player move ends"]:::trans
-    T3["T3 invokeAll returns, submit collisions"]:::trans
-    T4["T4 collision task ends"]:::trans
-    T5["T5 invokeAll returns"]:::trans
-    T6["T6 next step"]:::trans
+    T1["T1 move completati"]:::trans
+    T2["T2 invokeAll: submit collisioni"]:::trans
+    T3["T3 collisioni completate"]:::trans
+    T4["T4 invokeAll ritorna"]:::trans
+    T5["T5 prossimo passo"]:::trans
 
-    PE --> T0
-    T0 -->|N| PM
-    T0 --> PP
-    PM -->|N| T1
-    T1 -->|N| BM
-    PP --> T2
-    T2 --> BM
-    BM -->|N+1| T3
-    T3 -->|M| CT
-    T3 --> CE
-    CT -->|M| T4
-    T4 -->|M| BC
-    BC -->|M| T5
-    CE --> T5
-    T5 --> PF
-    PF --> T6
-    T6 --> PE
+    P0 --> T0
+    T0 -->|N+1| P1
+    P1 -->|N+1| T1
+    T1 -->|N+1| B1
+    B1 -->|N+1| T2
+    T2 -->|M+1| P2
+    P2 -->|M+1| T3
+    T3 -->|M+1| B2
+    B2 -->|M+1| T4
+    T4 --> P3
+    P3 --> T5
+    T5 --> P0
 ```
 
-Differenze rispetto alla rete precedente:
-
-- i gettoni nelle place `PM` e `CT` rappresentano **task**, non thread; vengono
-  creati da `T0`/`T3` e consumati al termine del task;
-- il join è implicito in `invokeAll`: `T3` e `T5` sono abilitate solo quando tutti
-  i task della fase hanno depositato il proprio gettone;
-- il master resta in `CE` durante la fase di collisione (è bloccato su
-  `invokeAll`), mentre nella versione multithread resta in attesa sulla barriera;
-- non esiste una place esplicita per la barriera: `invokeAll` unisce attesa e
-  sincronizzazione in un'unica primitiva.
+- `P1` contiene `N` task di move più il master che muove le palline giocatore.
+- `P2` contiene `M = 2N` task di collisione (righe piccola-piccola e blocchi
+  giocatore-piccola) più il master bloccato su `invokeAll`.
+- I task sono creati e distrutti a ogni passo: i gettoni di `P1` e `P2` rappresentano
+  task, non thread persistenti. Per questo la rete non conserva il numero totale di
+  gettoni.
+- `P3` rappresenta la finalizzazione single-thread e il sonno fino al frame
+  successivo.
 
 ### 6.3 Pipeline di input
 
-```mermaid
-flowchart LR
-    classDef trans fill:#2f3640,stroke:#2f3640,color:#fff;
-
-    PK(("PK key event<br/>(1)"))
-    CQ(("CQ command queue<br/>(0..100)"))
-    CR(("CR controller ready<br/>(1)"))
-    CE(("CE command executing<br/>(1)"))
-    MU(("MU model updated<br/>(1)"))
-    CD(("CD command dropped<br/>(0..)")) 
-
-    T0["T0 enqueue<br/>put / offer"]:::trans
-    T1["T1 take"]:::trans
-    T2["T2 execute on model"]:::trans
-    T3["T3 controller ready"]:::trans
-    T4["T4 drop (solo task-based)"]:::trans
-
-    PK --> T0
-    T0 --> CQ
-    CQ --> T1
-    CR --> T1
-    T1 --> CE
-    CE --> T2
-    T2 --> MU
-    MU --> T3
-    T3 --> CR
-    PK -->|"coda piena"| T4
-    T4 --> CD
-```
-
-Nella versione multithread `T0` è bloccante (`put`), quindi `T4` non è abilitata:
-il produttore aspetta. Nella versione task-based `T0` usa `offer`, quindi se la coda
-è piena il comando viene scartato (`T4`). In entrambi i casi l'EDT non viene mai
-bloccato e i comandi vengono applicati in ordine FIFO.
+Non serve una rete dedicata: l'input è un classico produttore/consumatore su una
+coda limitata a 100 elementi. Nella versione multithread `put` blocca quando la coda
+è piena; nella task-based `offer` scarta il comando. In entrambi i casi l'EDT non
+viene mai bloccato e i comandi sono applicati in ordine FIFO dal controller.
 
 ---
 
