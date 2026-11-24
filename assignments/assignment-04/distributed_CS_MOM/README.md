@@ -38,17 +38,17 @@ older, late request from being granted while the section is already occupied.
 The broker therefore decouples the processes: they only need the broker address,
 not the identity or location of the other participants.
 
-### Membership and failures
+### Membership
 
 * A starting process broadcasts `HELLO`; known processes answer with a unicast
   `HELLO`, so both sides discover each other.
-* `HELLO` is also sent every 2 seconds as a heartbeat.
-* A node that has been silent for 6 seconds is removed from the local view.
-  This is best-effort failure detection under a fail-stop assumption.
-* Before sending a request, a process waits for a short discovery quiet period,
-  so that its view of the group is stable.
+* After the initial `HELLO` a process waits briefly (500 ms) so that HELLOs from
+  processes started at the same time can arrive before it begins.
 * If a new process joins while a request is in progress, the requester adds it to
   the set of nodes from which a `GRANT` is required.
+* A process sends `BYE` when it closes, so the others remove it from the group.
+* There is no failure detection: a process that crashes without sending `BYE`
+  remains in the others' view. The exercise assumes clean exits.
 
 ## Project structure
 
@@ -74,7 +74,16 @@ The shade plugin produces a self-contained executable jar in `target/`.
 
 ## Run
 
-Start a RabbitMQ broker on `localhost` (or pass a different host), then run at
+Start a RabbitMQ broker on `localhost` (or pass a different host)
+
+```bash
+docker run -d --name rabbitmq \
+  -p 5672:5672 \
+  -p 15672:15672 \
+  rabbitmq:3-management
+```
+
+then run at
 least two processes in separate terminals:
 
 ```bash
@@ -103,9 +112,9 @@ overlap in time.
 
 ## Assumptions and limitations
 
-* Nodes are fail-stop: a crashed node stops sending heartbeats.
+* Nodes leave cleanly with `BYE`; there is no timeout-based failure detection, so
+  a crashed node would leave the survivors waiting for its `GRANT`.
 * Message delivery is provided by RabbitMQ; the middleware assumes no message
   loss while the broker is reachable.
-* Network partitions are handled with the same timeout mechanism, which may
-  remove a live but unreachable node from the local view. Stronger guarantees
-  would require a consensus service or a quorum-based membership protocol.
+* Network partitions are not handled. Stronger guarantees would require a
+  consensus service or a quorum-based membership protocol.

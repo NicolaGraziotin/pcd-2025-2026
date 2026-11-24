@@ -4,11 +4,6 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Small text codec for {@link Message}.
- *
- * <p>The format is intentionally simple: {@code TYPE|SENDER|TIMESTAMP}. Node
- * identifiers are validated by the middleware and cannot contain the separator,
- * so no escaping is required. Using a plain text payload keeps the example free
- * from additional serialization libraries.</p>
  */
 public final class MessageCodec {
 
