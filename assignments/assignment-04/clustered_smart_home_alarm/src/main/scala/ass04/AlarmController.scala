@@ -9,11 +9,6 @@ import org.apache.pekko.cluster.sharding.typed.scaladsl.EntityTypeKey
   * Each state is a distinct behavior; timeouts are self-sent messages. The
   * actor is used as a cluster-sharded entity, so its logical identity is
   * stable while its physical location may change.
-  *
-  * No state is persisted on purpose. If the entity is stopped and later
-  * re-created (node failure, rebalancing, explicit restart) it starts in
-  * `RECOVERY`: it does not assume the system was armed or disarmed, ignores
-  * sensor events and requires the correct PIN before returning to `DISARMED`.
   */
 object AlarmController:
 
@@ -74,10 +69,6 @@ object AlarmController:
           handler(ctx, other)
     }
 
-  // -------------------------------------------------------------------------
-  // RECOVERY
-  // -------------------------------------------------------------------------
-
   private def recovery(
       config: AlarmConfig,
       siren: ActorRef[Siren.Command],
@@ -114,10 +105,6 @@ object AlarmController:
         case _ =>
           Behaviors.same
     }
-
-  // -------------------------------------------------------------------------
-  // DISARMED
-  // -------------------------------------------------------------------------
 
   private def disarmed(
       config: AlarmConfig,
@@ -159,10 +146,6 @@ object AlarmController:
           Behaviors.same
     }
 
-  // -------------------------------------------------------------------------
-  // EXIT DELAY
-  // -------------------------------------------------------------------------
-
   private def exitDelay(
       config: AlarmConfig,
       siren: ActorRef[Siren.Command],
@@ -200,10 +183,6 @@ object AlarmController:
           Behaviors.same
     }
 
-  // -------------------------------------------------------------------------
-  // ARMED
-  // -------------------------------------------------------------------------
-
   private def armed(
       config: AlarmConfig,
       siren: ActorRef[Siren.Command],
@@ -240,10 +219,6 @@ object AlarmController:
         case _ =>
           Behaviors.same
     }
-
-  // -------------------------------------------------------------------------
-  // ENTRY DELAY
-  // -------------------------------------------------------------------------
 
   private def entryDelay(
       config: AlarmConfig,
@@ -283,10 +258,6 @@ object AlarmController:
         case _ =>
           Behaviors.same
     }
-
-  // -------------------------------------------------------------------------
-  // ALARM
-  // -------------------------------------------------------------------------
 
   private def alarm(
       config: AlarmConfig,
