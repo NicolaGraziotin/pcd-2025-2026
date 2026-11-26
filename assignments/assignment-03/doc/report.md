@@ -2,7 +2,7 @@
 
 ## Programmazione Concorrente e Distribuita [25-26]
 
-**Autore:** Nicola Graziotin (`nicola.graziotin@studio.unibo.it`)
+**Autore:** Nicola Graziotin (nicola.graziotin@studio.unibo.it)
 
 ---
 
@@ -17,22 +17,35 @@
 
 ### Analisi del problema
 
-Il sistema è una centralina di allarme che reagisce a due sorgenti di eventi asincroni e indipendenti: gli **input dell'utente** dal tastierino e i **rilevamenti dei sensori**. La reazione non dipende dall'evento in sé ma dalla combinazione *evento + stato corrente*: lo stesso `SensorTriggered` deve essere ignorato da disinseriti, deve avviare l'entry delay da inseriti e non deve avere alcun effetto se l'allarme è già scattato.
+Il sistema è una centralina di allarme che reagisce a due sorgenti di eventi asincroni e indipendenti: gli **input dell'utente** dal tastierino e i **rilevamenti dei sensori**. La reazione non dipende dall'evento in sé ma dalla combinazione *evento + stato corrente*: lo stesso SensorTriggered deve essere ignorato da disinseriti, deve avviare l'entry delay da inseriti e non deve avere alcun effetto se l'allarme è già scattato.
 
 #### Macchina a stati e vincoli temporali
 
 Gli stati richiesti sono cinque, con queste transizioni:
 
-| Stato | Evento | Nuovo stato |
-|---|---|---|
-| Disarmed | `Arm` con PIN corretto | Exit Delay |
-| Exit Delay | scadenza timer | Armed |
-| Exit Delay | `PinEntered` corretto | Disarmed (annulla) |
-| Armed | `SensorTriggered` in zona attiva | Entry Delay |
-| Armed | `PinEntered` corretto | Disarmed |
-| Entry Delay | `PinEntered` corretto | Disarmed |
-| Entry Delay | scadenza timer | Alarm |
-| Alarm | `PinEntered` corretto | Disarmed (sirena OFF) |
+```mermaid
+stateDiagram-v2
+    [*] --> Disarmed
+
+    state "Disarmed" as Disarmed
+    state "Exit Delay" as ExitDelay
+    state "Armed" as Armed
+    state "Entry Delay" as EntryDelay
+    state "Alarm" as Alarm
+
+    Disarmed --> ExitDelay : Arm con PIN corretto
+    
+    ExitDelay --> Armed : Scadenza timer
+    ExitDelay --> Disarmed : PinEntered corretto
+    
+    Armed --> EntryDelay : SensorTriggered in zona attiva
+    Armed --> Disarmed : PinEntered corretto
+    
+    EntryDelay --> Disarmed : PinEntered corretto
+    EntryDelay --> Alarm : Scadenza timer
+    
+    Alarm --> Disarmed : PinEntered corretto
+```
 
 I due ritardi (exit delay ed entry delay) sono il punto concettualmente più delicato: un'attesa bloccante della durata del timeout congelerebbe l'attore, che smetterebbe di ricevere PIN e segnali dai sensori proprio nella fase in cui deve reagire in fretta. Il timer deve quindi essere **non bloccante** e la scadenza deve rientrare nel sistema come un normale messaggio.
 
@@ -57,16 +70,14 @@ Main.guardian (Behaviors.setup)
 └── sensor-bedroom   (Sensor: motion-bedroom / sleeping  / motion)
 ```
 
-- **`AlarmController`** è l'unico detentore dello stato del sistema: incassa comandi da keypad e sensori e comanda la sirena.
-- **`Keypad`** traduce una riga di testo in un `Command` e la inoltra; non conosce lo stato del sistema.
-- **`Siren`** è un attore a due behavior (`off`/`on`) comandato solo da messaggi, quindi la centralina non tocca mai direttamente lo stato della sirena.
-- **`Sensor`** osserva l'ambiente e invia `SensorTriggered(sensorId, zone, kind)`; non sa nulla di armamento.
-
-Ho scartato una gerarchia `SensorsManager` → `SensorsGroup` → sensori: con quattro sensori e zone espresse come semplice `Set[String]` avrebbe aggiunto due livelli di indirezione senza risolvere nulla. La zona vive come dato nel messaggio e nel `Set` delle zone attive; se in futuro i sensori diventassero decine o dovessero essere distribuiti su nodi diversi, quella gerarchia diventerebbe sensata.
+- **AlarmController** è l'unico detentore dello stato del sistema: incassa comandi da keypad e sensori e comanda la sirena.
+- **Keypad** traduce una riga di testo in un Command e la inoltra; non conosce lo stato del sistema.
+- **Siren** è un attore a due behavior (off/on) comandato solo da messaggi, quindi la centralina non tocca mai direttamente lo stato della sirena.
+- **Sensor** osserva l'ambiente e invia SensorTriggered(sensorId, zone, kind); non sa nulla di armamento.
 
 #### Macchina a stati tramite behavior switching
 
-Nessuna variabile mutabile condivisa: ogni stato è una funzione che restituisce un `Behavior[Command]` diverso.
+Nessuna variabile mutabile condivisa: ogni stato è una funzione che restituisce un Behavior[Command] diverso.
 
 ```scala
 private def disarmed(config, siren, timers): Behavior[Command] = ...
@@ -76,26 +87,26 @@ private def entryDelay(config, siren, timers, activeZones, triggeredBy): Behavio
 private def alarm(config, siren, timers, activeZones): Behavior[Command] = ...
 ```
 
-Il vantaggio è che ogni stato dichiara *esplicitamente* quali messaggi gestisce. Un `Arm` ricevuto in `Armed` non è un caso dimenticato: è un branch che logga "già inserito, ignorato". Lo stato che serve ai fini della transizione (zone attive, sensore che ha causato l'intrusione) viaggia come **parametro della funzione**, quindi non esiste uno stato globale che possa essere letto in un momento incoerente.
+Il vantaggio è che ogni stato dichiara *esplicitamente* quali messaggi gestisce. Un Arm ricevuto in Armed non è un caso dimenticato: è un branch che logga "già inserito, ignorato". Lo stato che serve ai fini della transizione (zone attive, sensore che ha causato l'intrusione) viaggia come **parametro della funzione**, quindi non esiste uno stato globale che possa essere letto in un momento incoerente.
 
 #### Timer non bloccanti
 
-`Behaviors.withTimers` fornisce un `TimerScheduler[Command]` passato a tutti gli stati. All'armamento:
+Behaviors.withTimers fornisce un TimerScheduler[Command] passato a tutti gli stati. All'armamento:
 
 ```scala
 timers.startSingleTimer(ExitTimerKey, ExitTimeout, config.exitDelay)
 exitDelay(config, siren, timers, active)
 ```
 
-La scadenza risveglia lo stesso attore con `ExitTimeout`, e la transizione avviene dentro il normale `receive`: nessun thread resta parcheggiato, nessun `Thread.sleep`. L'uso di **chiavi** (`ExitTimerKey`, `EntryTimerKey`) rende idempotente il timer e permette di annullarlo con `timers.cancel(ExitTimerKey)` quando l'utente digita il PIN corretto durante l'exit delay. Nel caso dell'entry delay, PIN corretto e `EntryTimeout` sono in gara: entrambi arrivano alla stessa mailbox, quindi vince il primo che viene processato e lo stato risultante è sempre coerente.
+La scadenza risveglia lo stesso attore con ExitTimeout, e la transizione avviene dentro il normale receive: nessun thread resta parcheggiato, nessun Thread.sleep. L'uso di **chiavi** (ExitTimerKey, EntryTimerKey) rende idempotente il timer e permette di annullarlo con timers.cancel(ExitTimerKey) quando l'utente digita il PIN corretto durante l'exit delay. Nel caso dell'entry delay, PIN corretto e EntryTimeout sono in gara: entrambi arrivano alla stessa mailbox, quindi vince il primo che viene processato e lo stato risultante è sempre coerente.
 
 #### Sensori e simulazione
 
-`Sensor` è parametrico su `sensorId`, `zone`, `kind`, intervallo e probabilità. Con `startTimerAtFixedRate` genera un `Tick` periodico e, con probabilità 0.25, invia l'evento alla centralina; il generatore casuale è inizializzato con `sensorId.hashCode` così il comportamento è riproducibile. Il comando `TriggerNow` permette di forzare un rilevamento da console. Sensori diversi (`door` e `motion`) usano lo stesso attore con parametri diversi: la tipologia è un dato, non una sottoclasse, perché il comportamento verso la centralina è identico.
+Sensor è parametrico su sensorId, zone, kind, intervallo e probabilità. Con startTimerAtFixedRate genera un Tick periodico e, con probabilità 0.25, invia l'evento alla centralina; il generatore casuale è inizializzato con sensorId.hashCode così il comportamento è riproducibile. Il comando TriggerNow permette di forzare un rilevamento da console. Sensori diversi (door e motion) usano lo stesso attore con parametri diversi: la tipologia è un dato, non una sottoclasse, perché il comportamento verso la centralina è identico.
 
 #### Zone e armamento parziale
 
-`Arm(pin, zones)` con `zones` vuoto significa armamento totale; altrimenti si fa l'intersezione con `config.allZones` e, se il risultato è vuoto, l'armamento viene rifiutato. Il `Set` delle zone attive viene passato agli stati `Armed`/`EntryDelay`/`Alarm`, e in `Armed` il controllo è una riga:
+Arm(pin, zones) con zones vuoto significa armamento totale; altrimenti si fa l'intersezione con config.allZones e, se il risultato è vuoto, l'armamento viene rifiutato. Il Set delle zone attive viene passato agli stati Armed/EntryDelay/Alarm, e in Armed il controllo è una riga:
 
 ```scala
 case SensorTriggered(id, zone, kind) =>
@@ -103,17 +114,17 @@ case SensorTriggered(id, zone, kind) =>
   else /* log e ignora */
 ```
 
-Questo copre il caso d'uso "night mode" della traccia: armando solo `perimeter`, un movimento in `sleeping` viene loggato e ignorato.
+Questo copre il caso d'uso "night mode" della traccia: armando solo perimeter, un movimento in sleeping viene loggato e ignorato.
 
 #### Interazione utente e I/O
 
-Il keypad è un attore, ma la lettura da console no: `StdIn.readLine()` è bloccante e un attore che la esegue smetterebbe di elaborare messaggi. La console gira quindi su un thread demone separato che invia `Keypad.RawInput` e, per il comando `status`, usa il pattern **ask** (`GetStatus`/`Status`) per ottenere una risposta dalla centralina senza condividerne lo stato. È l'unico punto del sistema con un'attesa sincrona, ed è confinato fuori dal sistema di attori.
+Il keypad è un attore, ma la lettura da console no: StdIn.readLine() è bloccante e un attore che la esegue smetterebbe di elaborare messaggi. La console gira quindi su un thread demone separato che invia Keypad.RawInput e, per il comando status, usa il pattern **ask** (GetStatus/Status) per ottenere una risposta dalla centralina senza condividerne lo stato. È l'unico punto del sistema con un'attesa sincrona, ed è confinato fuori dal sistema di attori.
 
 ### Conclusioni e verifica
 
-Non ci sono test automatizzati con ScalaTest: la verifica è affidata a uno scenario guidato (comando `demo`) e all'esecuzione interattiva da console. La configurazione `AlarmConfig.demo()` riduce exit ed entry delay a 5 secondi per rendere il ciclo arm → intrusion → disarm veloce da osservare, mentre `realistic()` mantiene i valori della traccia (30s/20s). Il demo copre in sequenza: armamento totale, intrusione con PIN in tempo (nessun allarme), armamento parziale con evento in zona inattiva ignorato, intrusione in zona attiva con scadenza del timeout e attivazione della sirena, disinserimento finale.
+Non ci sono test automatizzati con ScalaTest: la verifica è affidata a uno scenario guidato (comando demo) e all'esecuzione interattiva da console. La configurazione AlarmConfig.demo() riduce exit ed entry delay a 5 secondi per rendere il ciclo arm → intrusion → disarm veloce da osservare, mentre realistic() mantiene i valori della traccia (30s/20s). Il demo copre in sequenza: armamento totale, intrusione con PIN in tempo (nessun allarme), armamento parziale con evento in zona inattiva ignorato, intrusione in zona attiva con scadenza del timeout e attivazione della sirena, disinserimento finale.
 
-L'output è interamente su log, il che rende leggibile la sequenza degli eventi ma non verifica nulla automaticamente: uno sviluppo successivo sarebbe estrarre la FSM e testarla con `ActorTestKit` inviando i messaggi e asserendo lo `Status` atteso.
+L'output è interamente su log, il che rende leggibile la sequenza degli eventi ma non verifica nulla automaticamente.
 
 ---
 
@@ -158,7 +169,7 @@ L'implementazione distingue tre tipi di goroutine:
 - **arbitri di partita** (uno per partita, creato a ogni round e poi terminato);
 - **logger** (uno solo, che serializza l'output).
 
-Il `main`/`RunTournament` fa solo da avvio e raccolta risultati: non instrada messaggi tra i giocatori.
+Il main/RunTournament fa solo da avvio e raccolta risultati: non instrada messaggi tra i giocatori.
 
 #### Attori giocatore
 
@@ -175,7 +186,7 @@ type PlayerMsg struct {
 
 Ogni giocatore ha un **canale dedicato** per tutta la durata del torneo: non cambia canale a ogni round, cambia solo l'interlocutore. Questo elimina la necessità di una matrice di canali calcolata a priori: l'arbitro della partita conosce già gli handle dei due giocatori e scrive nelle loro inbox. Il giocatore non deve sapere contro chi sta giocando né in quale posizione dell'albero si trova.
 
-Alla ricezione di una richiesta il giocatore simula un tempo di riflessione (`time.Sleep` casuale fino a `think-ms`), estrae una mossa in $[0, 5]$ e risponde sul canale indicato nel messaggio. Alla fine del torneo riceve `MsgQuit` e termina.
+Alla ricezione di una richiesta il giocatore simula un tempo di riflessione (time.Sleep casuale fino a think-ms), estrae una mossa in $[0, 5]$ e risponde sul canale indicato nel messaggio. Alla fine del torneo riceve MsgQuit e termina.
 
 #### Arbitro di partita e assenza di deadlock
 
@@ -198,7 +209,7 @@ Questa è una scelta diversa rispetto a un torneo peer-to-peer puro, in cui i du
 
 #### Assegnazione dei ruoli e decisione
 
-I ruoli `Odds` ed `Evens` sono assegnati casualmente all'interno di ogni partita, con un generatore deterministico inizializzato da `(seed, round, indice della partita)`: nel log le partite sono riproducibili a parità di seed. La casualità sui ruoli evita che lo stesso giocatore sia sempre Odds o sempre Evens quando il seed è fisso.
+I ruoli Odds ed Evens sono assegnati casualmente all'interno di ogni partita, con un generatore deterministico inizializzato da (seed, round, indice della partita): nel log le partite sono riproducibili a parità di seed. La casualità sui ruoli evita che lo stesso giocatore sia sempre Odds o sempre Evens quando il seed è fisso.
 
 La decisione è una funzione pura, senza stato:
 
@@ -210,26 +221,26 @@ func DecideWinner(oddsID, evensID, oddsMove, evensMove int) (winnerID, sum int) 
 }
 ```
 
-Somma pari → vince chi ha giocato il ruolo `Evens`, somma dispari → vince `Odds`. Essendo pura è anche l'unica parte del gioco banalmente testabile in isolamento.
+Somma pari → vince chi ha giocato il ruolo Evens, somma dispari → vince Odds. Essendo pura è anche l'unica parte del gioco banalmente testabile in isolamento.
 
 #### Concorrenza tra round
 
 Il torneo alterna due fasi:
 
-1. **fase parallela**: per ogni coppia del round corrente viene lanciata una goroutine `PlayMatch`; tutte le partite del round procedono contemporaneamente;
-2. **barriera**: il coordinatore legge esattamente `numMatches` risultati da un `resultCh` bufferizzato, riordina per indice e costruisce la lista dei vincitori per il round successivo.
+1. **fase parallela**: per ogni coppia del round corrente viene lanciata una goroutine PlayMatch; tutte le partite del round procedono contemporaneamente;
+2. **barriera**: il coordinatore legge esattamente numMatches risultati da un resultCh bufferizzato, riordina per indice e costruisce la lista dei vincitori per il round successivo.
 
-La barriera è necessaria perché una partita del round $r+1$ coinvolge i vincitori di due partite del round $r$. La lettura dei risultati è un ciclo di `<-resultCh`, quindi il coordinatore non fa polling né attese attive. Il `resultCh` ha capacità pari al numero di partite del round: nessun arbitro resta bloccato a consegnare il risultato se il coordinatore è momentaneamente in ritardo.
+La barriera è necessaria perché una partita del round $r+1$ coinvolge i vincitori di due partite del round $r$. La lettura dei risultati è un ciclo di <-resultCh, quindi il coordinatore non fa polling né attese attive. Il resultCh ha capacità pari al numero di partite del round: nessun arbitro resta bloccato a consegnare il risultato se il coordinatore è momentaneamente in ritardo.
 
-I giocatori sconfitti non vengono terminati subito: restano in attesa sulla propria inbox e ricevono `MsgQuit` alla fine. Questo evita una goroutine che termina mentre un eventuale messaggio è in volo e semplifica la chiusura.
+I giocatori sconfitti non vengono terminati subito: restano in attesa sulla propria inbox e ricevono MsgQuit alla fine. Questo evita una goroutine che termina mentre un eventuale messaggio è in volo e semplifica la chiusura.
 
 #### Logging
 
-Tutti gli attori non stampano direttamente: emettono su un `logCh` bufferizzato (capacità 128) servito da una singola goroutine `runLogger`. Due motivi: le righe di partite concorrenti altrimenti si intreccerebbero, e `fmt.Println` è un'operazione lenta che, se eseguita dentro gli attori, falserebbe i tempi delle partite. Se il logger non è disponibile (`logCh == nil`) `emit` non fa nulla, così la logica del torneo è utilizzabile anche senza output.
+Tutti gli attori non stampano direttamente: emettono su un logCh bufferizzato (capacità 128) servito da una singola goroutine runLogger. Due motivi: le righe di partite concorrenti altrimenti si intreccerebbero, e fmt.Println è un'operazione lenta che, se eseguita dentro gli attori, falserebbe i tempi delle partite. Se il logger non è disponibile (logCh == nil) emit non fa nulla, così la logica del torneo è utilizzabile anche senza output.
 
 #### Configurazione
 
-Il programma è parametrizzato da flag: `-players` (alternativo a `-rounds`), `-seed`, `-think-ms`. `NumRounds` calcola $m$ per shift successivi e `IsPowerOfTwo` valida $N \ge 2$; `-rounds` è limitato a $[1, 12]$ per evitare di lanciare milioni di goroutine per un errore di battitura.
+Il programma è parametrizzato da flag: -players (alternativo a -rounds), -seed, -think-ms. NumRounds calcola $m$ per shift successivi e IsPowerOfTwo valida $N \ge 2$; -rounds è limitato a $[1, 12]$ per evitare di lanciare milioni di goroutine per un errore di battitura.
 
 ### Conclusioni e verifica
 
@@ -237,4 +248,4 @@ Il modello scelto è un **coordinamento centralizzato per partita**: lo stato de
 
 Il compromesso rispetto a una soluzione completamente decentralizzata è che l'arbitro è un punto di sincronizzazione per la singola partita e il coordinatore impone una barriera per round: un round non può iniziare prima che il precedente sia concluso, anche se alcune partite sono già decise. In cambio si ottiene un codice molto più semplice: niente regole posizionali per i ruoli, niente canali calcolati in base all'ID, e un log ordinato per round e indice di partita.
 
-Anche qui non ci sono test automatici: la verifica avviene eseguendo il programma con seed fissi e confrontando i log, oppure ripetendo l'esecuzione sui vari valori di `-rounds`/`-players` per controllare la validazione degli input. Le funzioni pure `DecideWinner`, `IsPowerOfTwo` e `NumRounds` sono però i candidati naturali per i primi test unitari. Un test interessante da aggiungere sarebbe quello con `-race` su molti round: è l'unico modo per dimostrare in modo ripetibile che l'assenza di memoria condivisa è rispettata anche nelle parti di orchestrazione.
+Anche qui non ci sono test automatici: la verifica avviene eseguendo il programma con seed fissi e confrontando i log, oppure ripetendo l'esecuzione sui vari valori di -rounds/-players per controllare la validazione degli input.
