@@ -18,16 +18,6 @@ import pcd.ass02.FSReport;
 
 /**
  * Virtual-threads FS stat library.
- *
- * <p>Each directory spawns one virtual thread per subdirectory on a
- * {@code newVirtualThreadPerTaskExecutor}. Blocking calls
- * ({@code newDirectoryStream}, {@code size}) simply park the virtual thread
- * (cheap), so unlike platform threads there is no pool exhaustion and no
- * pool-induced deadlock when a task joins its children. Shared counters use
- * {@code LongAdder} (lock-free, contention-friendly for thousands of
- * writers); no {@code synchronized} (which would pin the virtual thread to
- * its carrier on older JDKs) and no explicit locks at all. At the end the
- * adders are copied into an immutable {@link FSReport}.
  */
 public class FSStatLib implements AutoCloseable {
 
