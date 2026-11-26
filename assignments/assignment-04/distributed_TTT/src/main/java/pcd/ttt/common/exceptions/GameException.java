@@ -1,11 +1,9 @@
-package pcd.ttt.common;
+package pcd.ttt.common.exceptions;
 
 import java.io.Serial;
 
 /**
  * Base class for all the checked game errors that can cross an RMI boundary.
- *
- * <p>It is serializable so that the server can send it back to the client.</p>
  */
 public class GameException extends Exception {
 

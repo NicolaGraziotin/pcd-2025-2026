@@ -1,4 +1,4 @@
-package pcd.ttt.common;
+package pcd.ttt.common.exceptions;
 
 import java.io.Serial;
 
