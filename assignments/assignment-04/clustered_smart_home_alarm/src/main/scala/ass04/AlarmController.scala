@@ -23,9 +23,6 @@ object AlarmController:
   final case class PinEntered(pin: String) extends Command
   final case class SensorTriggered(sensorId: String, zone: String, kind: String) extends Command
 
-  /** Test/demo hook: stops the entity, so the next message creates a fresh
-    * instance with no memory of the previous state.
-    */
   final case class RestartEntity() extends Command
 
   final case class GetStatus(replyTo: ActorRef[Status]) extends Command
@@ -39,9 +36,6 @@ object AlarmController:
 
   def apply(config: AlarmConfig): Behavior[Command] =
     Behaviors.setup { ctx =>
-      // The siren is a child of the entity: it lives on the same node as the
-      // current controller incarnation. If the entity is re-created elsewhere,
-      // the new incarnation starts with a fresh, silent siren.
       val siren = ctx.spawnAnonymous(Siren())
       Behaviors.withTimers { timers =>
         ctx.log.info(
@@ -52,9 +46,6 @@ object AlarmController:
       }
     }
 
-  /** Intercepts the restart command in every state. Any other message is
-    * delegated to the current state handler.
-    */
   private def guarded(
       handler: (ActorContext[Command], Command) => Behavior[Command]
   ): Behavior[Command] =

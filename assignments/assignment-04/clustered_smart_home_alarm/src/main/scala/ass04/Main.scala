@@ -10,10 +10,6 @@ import scala.concurrent.duration.*
 import scala.io.StdIn
 
 /** Entry point for every cluster node.
-  *
-  * The same image can run with one or more roles (`controller`, `sensor`,
-  * `keypad`). Cluster sharding owns the alarm controller and sensor entities,
-  * so actors can be addressed by logical id without knowing their node.
   */
 object Main:
 

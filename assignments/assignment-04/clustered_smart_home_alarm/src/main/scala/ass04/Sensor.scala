@@ -26,11 +26,6 @@ object SensorCatalog:
   def ids: String = all.map(_.sensorId).mkString(", ")
 
 /** Sensor actor that notifies the alarm controller asynchronously on detection.
-  *
-  * Sensors are cluster-sharded entities: their logical identity is the
-  * `sensorId`, while the actual actor may live on any node with the `sensor`
-  * role. This lets the keypad trigger a sensor on another node and lets the
-  * cluster move a sensor entity if its current node leaves.
   */
 object Sensor:
 
@@ -38,16 +33,10 @@ object Sensor:
 
   sealed trait Command extends CborSerializable
 
-  /** Starts the periodic detection loop for an entity. It is idempotent in the
-    * sense that repeated `Start` messages do not create duplicate sensors:
-    * cluster sharding guarantees one entity per `sensorId`.
-    */
   final case class Start(sensorId: String) extends Command
 
-  /** Manual trigger, sent by the keypad to the sharded sensor entity. */
   final case class TriggerNow() extends Command
 
-  /** Local timer message; never serialized across nodes. */
   private case object Tick extends Command
 
   def apply(

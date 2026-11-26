@@ -6,16 +6,6 @@ import scala.concurrent.duration.*
 
 /** Per-node settings, read from environment variables so the same image can
   * be started as a seed/controller, sensor or keypad node.
-  *
-  * Supported variables:
-  *   - CLUSTER_HOST    hostname advertised by Artery (Docker service name)
-  *   - CLUSTER_PORT    Artery port (default 25520)
-  *   - CLUSTER_ROLES   comma-separated roles: controller,sensor,keypad
-  *   - SEED_HOST       hostname of the seed node (default: CLUSTER_HOST)
-  *   - SEED_PORT       port of the seed node (default: CLUSTER_PORT)
-  *   - ALARM_PIN       PIN (default 1234)
-  *   - EXIT_DELAY      exit delay in seconds (default 5)
-  *   - ENTRY_DELAY     entry delay in seconds (default 5)
   */
 final case class NodeSettings(
     systemName: String,

@@ -4,11 +4,6 @@ import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 
 /** Keypad actor translating console input into controller messages.
-  *
-  * The keypad only knows how to send commands, not where the controller
-  * entity currently lives. In the cluster bootstrap it is wired to the
-  * sharded `AlarmController` entity, so it can run on a different node from
-  * the controller and the sensors.
   */
 object Keypad:
 
