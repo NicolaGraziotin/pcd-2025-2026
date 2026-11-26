@@ -7,8 +7,6 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Example process that uses the middleware without any knowledge of the other
  * processes. The only parameters are its own identifier and the RabbitMQ host.
- *
- * <p>Usage: {@code java ass04.Main <node-id> [host] [rounds] [work-ms]}</p>
  */
 public final class Main {
 
