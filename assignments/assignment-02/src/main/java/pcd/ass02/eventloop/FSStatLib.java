@@ -13,13 +13,6 @@ import pcd.ass02.FSReport;
 
 /**
  * Event-loop based FS stat library (Vert.x).
- *
- * <p>All coordination state
- * lives on the Vert.x event-loop thread (confinement), so no locks are
- * needed. Parallelism comes from many outstanding async FS operations
- * ({@code readDir}/{@code props}), whose completions are serialized as
- * events on the loop. Blocking syscalls are never executed on the loop:
- * {@code readDir} and {@code props} are the async Vert.x FileSystem APIs.
  */
 public class FSStatLib {
 
