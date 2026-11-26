@@ -1,11 +1,11 @@
 package pcd.ttt.client;
 
 import pcd.ttt.common.BoardState;
-import pcd.ttt.common.GameException;
 import pcd.ttt.common.GameLobby;
 import pcd.ttt.common.GameSession;
 import pcd.ttt.common.PlayerListener;
 import pcd.ttt.common.RmiConfig;
+import pcd.ttt.common.exceptions.GameException;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,10 +19,6 @@ import java.util.Locale;
 
 /**
  * Interactive command-line client.
- *
- * <p>Usage: {@code RunClient [host] [port] [playerName]}. The client exports a
- * {@link PlayerListenerImpl} and passes its stub to the lobby; the server then
- * uses it to push game events back to this client.</p>
  */
 public final class RunClient {
 

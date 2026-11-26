@@ -9,9 +9,9 @@
 ## Indice
 
 1. [Introduzione](#1-introduzione)
-2. [Smart Home Alarm su cluster Pekko](#2-esercizio-1-smart-home-alarm-su-cluster-pekko)
-3. [Tic-Tac-Toe distribuito con Java RMI](#3-esercizio-2-tic-tac-toe-distribuito-con-java-rmi)
-4. [Sezioni critiche distribuite su MOM](#4-esercizio-3-sezioni-critiche-distribuite-su-mom)
+2. [Smart Home Alarm su cluster Pekko](#2-smart-home-alarm-su-cluster-pekko)
+3. [Tic-Tac-Toe distribuito con Java RMI](#3-tic-tac-toe-distribuito-con-java-rmi)
+4. [Sezioni critiche distribuite su MOM](#4-sezioni-critiche-distribuite-su-mom)
 5. [Considerazioni finali](#5-considerazioni-finali)
 
 ---
@@ -33,7 +33,7 @@ quando i componenti vivono su processi e nodi differenti.
 
 ---
 
-## 2. Esercizio 1: Smart Home Alarm su cluster Pekko
+## 2. Smart Home Alarm su cluster Pekko
 
 ### 2.1 Analisi del problema
 
@@ -157,7 +157,7 @@ noto.
 
 ---
 
-## 3. Esercizio 2: Tic-Tac-Toe distribuito con Java RMI
+## 3. Tic-Tac-Toe distribuito con Java RMI
 
 ### 3.1 Analisi del problema
 
@@ -259,7 +259,7 @@ acknowledgement né retry.
 
 ---
 
-## 4. Esercizio 3: Sezioni critiche distribuite su MOM
+## 4. Sezioni critiche distribuite su MOM
 
 ### 4.1 Analisi del problema
 

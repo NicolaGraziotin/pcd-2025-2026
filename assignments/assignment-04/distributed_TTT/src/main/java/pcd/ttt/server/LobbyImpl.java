@@ -1,13 +1,13 @@
 package pcd.ttt.server;
 
-import pcd.ttt.common.GameAlreadyExistsException;
-import pcd.ttt.common.GameException;
-import pcd.ttt.common.GameFullException;
 import pcd.ttt.common.GameLobby;
-import pcd.ttt.common.GameNotFoundException;
 import pcd.ttt.common.GameSession;
 import pcd.ttt.common.PlayerListener;
 import pcd.ttt.common.Symbol;
+import pcd.ttt.common.exceptions.GameAlreadyExistsException;
+import pcd.ttt.common.exceptions.GameException;
+import pcd.ttt.common.exceptions.GameFullException;
+import pcd.ttt.common.exceptions.GameNotFoundException;
 
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
@@ -21,12 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The lobby: the only globally known remote object of the system.
- *
- * <p>The {@link ConcurrentHashMap} makes game creation atomic: two clients
- * trying to create a game with the same name at the same time cannot both
- * succeed, because {@code putIfAbsent} is atomic. Each {@link GameImpl}
- * protects its own state independently, so games do not contend with each
- * other.</p>
  */
 public final class LobbyImpl implements GameLobby {
 

@@ -1,13 +1,13 @@
 package pcd.ttt.server;
 
 import pcd.ttt.common.BoardState;
-import pcd.ttt.common.GameException;
-import pcd.ttt.common.GameFullException;
 import pcd.ttt.common.GameStatus;
-import pcd.ttt.common.InvalidMoveException;
-import pcd.ttt.common.NotYourTurnException;
 import pcd.ttt.common.PlayerListener;
 import pcd.ttt.common.Symbol;
+import pcd.ttt.common.exceptions.GameException;
+import pcd.ttt.common.exceptions.GameFullException;
+import pcd.ttt.common.exceptions.InvalidMoveException;
+import pcd.ttt.common.exceptions.NotYourTurnException;
 
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
@@ -22,21 +22,6 @@ import java.util.function.Consumer;
 
 /**
  * Server-side state of a single game.
- *
- * <p><b>Concurrency design.</b> All mutable state (board, turn, players,
- * status) is guarded by the {@link #lock} monitor. Every operation:
- * <ol>
- *   <li>validates and updates the state while holding the lock;</li>
- *   <li>creates an immutable {@link BoardState} snapshot;</li>
- *   <li>enqueues the callbacks to the players;</li>
- *   <li>releases the lock before doing any remote call or cleanup.</li>
- * </ol>
- * Remote calls are never performed while holding the monitor, so a slow or
- * crashed client cannot block the game or create lock-ordering deadlocks.</p>
- *
- * <p>Each player has a dedicated single-thread notifier. This preserves the
- * order of the events observed by that player while isolating the two players:
- * a slow client does not delay the notifications sent to the opponent.</p>
  */
 public final class GameImpl {
 
@@ -66,11 +51,6 @@ public final class GameImpl {
         return name;
     }
 
-    /**
-     * Adds a player to the game. The first player is X, the second one is O.
-     *
-     * @return the symbol assigned to the new player
-     */
     public Symbol join(String playerName, PlayerListener listener) throws GameException {
         synchronized (lock) {
             if (closed || status.isTerminal()) {
@@ -98,10 +78,6 @@ public final class GameImpl {
         }
     }
 
-    /**
-     * Validates and applies a move. The move is accepted only if the game is in
-     * progress, it is the caller's turn, and the target cell is empty.
-     */
     public void makeMove(Symbol symbol, int row, int col) throws GameException {
         BoardState snapshot;
         String moverName;
@@ -147,8 +123,6 @@ public final class GameImpl {
 
             snapshot = snapshotLocked();
 
-            // Enqueueing inside the lock guarantees that every player observes
-            // events in exactly the same order in which the state changed.
             for (Player p : players) {
                 p.send(l -> l.onMoveMade(snapshot, moverName, row, col));
             }
@@ -166,10 +140,6 @@ public final class GameImpl {
         }
     }
 
-    /**
-     * Removes a player. If the game was in progress, the remaining player is
-     * notified that the game has been aborted.
-     */
     public void leave(Symbol symbol) {
         boolean doCleanup = false;
 
@@ -205,9 +175,6 @@ public final class GameImpl {
         }
     }
 
-    /**
-     * Forces the game to a terminal state, used when creation or joining fails.
-     */
     public void abort(String reason) {
         boolean doCleanup = false;
 
@@ -252,10 +219,6 @@ public final class GameImpl {
         }
     }
 
-    /**
-     * Registers the exported session so that it can be unexported at the end of
-     * the game. Returns {@code false} if the game has already been closed.
-     */
     public boolean registerSession(GameSessionImpl session) {
         synchronized (lock) {
             if (closed) {
@@ -303,10 +266,6 @@ public final class GameImpl {
         };
     }
 
-    /**
-     * Removes the game from the lobby and releases the RMI resources.
-     * Called exactly once, outside the game lock.
-     */
     private void cleanup() {
         List<Player> playersToStop;
         List<GameSessionImpl> sessionsToUnexport;
@@ -319,7 +278,6 @@ public final class GameImpl {
 
         onFinished.accept(this);
 
-        // shutdown() lets already enqueued notifications complete.
         for (Player p : playersToStop) {
             p.shutdown();
         }
@@ -344,10 +302,6 @@ public final class GameImpl {
         void call(PlayerListener listener) throws RemoteException;
     }
 
-    /**
-     * A connected player: identity, remote callback stub, and a private
-     * single-thread executor that delivers notifications in order.
-     */
     private static final class Player {
 
         private final String name;

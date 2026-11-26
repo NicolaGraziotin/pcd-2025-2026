@@ -6,10 +6,6 @@ import java.util.Arrays;
 
 /**
  * Immutable snapshot of a game board.
- *
- * <p>Snapshots are serializable and are sent to clients through RMI. Since they
- * are immutable, the server can safely hand the same object to several remote
- * calls without exposing its internal mutable state.</p>
  */
 public final class BoardState implements Serializable {
 
@@ -67,12 +63,13 @@ public final class BoardState implements Serializable {
      */
     public String render() {
         StringBuilder sb = new StringBuilder();
-        sb.append("       0   1   2\n");
+        sb.append("     0   1   2\n");
         for (int row = 0; row < SIZE; row++) {
             sb.append("  ").append(row).append(" ");
             for (int col = 0; col < SIZE; col++) {
                 Symbol cell = cells[row * SIZE + col];
-                sb.append("  ").append(cell == null ? ' ' : cell.name().charAt(0)).append(" ");
+                char c = (cell == null) ? ' ' : cell.name().charAt(0);
+                sb.append(" ").append(c).append(" ");
                 if (col < SIZE - 1) {
                     sb.append("|");
                 }

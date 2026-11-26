@@ -1,18 +1,14 @@
 package pcd.ttt.server;
 
 import pcd.ttt.common.BoardState;
-import pcd.ttt.common.GameException;
 import pcd.ttt.common.GameSession;
 import pcd.ttt.common.Symbol;
+import pcd.ttt.common.exceptions.GameException;
 
 import java.rmi.RemoteException;
 
 /**
  * Server-side implementation of the per-player remote session.
- *
- * <p>The session stores the player's identity (symbol), so the client never
- * needs to send it. All operations are delegated to the shared
- * {@link GameImpl}, which performs the actual synchronization.</p>
  */
 public final class GameSessionImpl implements GameSession {
 

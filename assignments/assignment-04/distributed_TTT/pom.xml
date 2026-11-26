@@ -42,36 +42,43 @@
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.4.2</version>
         </plugin>
-     	<plugin>
+     	  <plugin>
         	<groupId>org.apache.maven.plugins</groupId>
         	<artifactId>maven-shade-plugin</artifactId>
         	<version>3.6.0</version>
-        	<executions>
-          		<execution>
-            		<phase>package</phase>
- 	 		         <goals>
-              			<goal>shade</goal>
-            		</goals>
-          		</execution>
-        	</executions>
+          <executions>
+            <execution>
+              <id>server-jar</id>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <outputFile>${project.build.directory}/server.jar</outputFile>
+                <transformers>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <mainClass>pcd.ttt.server.RunServer</mainClass>
+                  </transformer>
+                </transformers>
+              </configuration>
+            </execution>
+            <execution>
+              <id>client-jar</id>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <outputFile>${project.build.directory}/client.jar</outputFile>
+                <transformers>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <mainClass>pcd.ttt.client.RunClient</mainClass>
+                  </transformer>
+                </transformers>
+              </configuration>
+            </execution>
+          </executions>
       	</plugin>
-<!--
-        <plugin>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.12.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.6.1</version>
-        </plugin> -->
       </plugins>
   </build>
 </project>

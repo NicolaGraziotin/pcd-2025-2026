@@ -6,10 +6,6 @@ import pcd.ttt.common.Symbol;
 
 /**
  * Client-side implementation of the remote callback.
- *
- * <p>The server invokes these methods on RMI threads. The listener keeps the
- * last board snapshot so the main thread can print it without an extra remote
- * call, and it uses {@link Console} to serialize the output.</p>
  */
 public final class PlayerListenerImpl implements PlayerListener {
 

@@ -12,10 +12,6 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * Entry point of the server.
- *
- * <p>Starts (or reuses) an RMI registry, exports the lobby and binds it under
- * {@link RmiConfig#LOBBY_NAME}. The process then waits forever; the RMI runtime
- * keeps serving remote calls on its own threads.</p>
  */
 public final class RunServer {
 
@@ -43,8 +39,6 @@ public final class RunServer {
             log("TTT lobby bound as '" + RmiConfig.LOBBY_NAME + "' on registry port " + port);
             log("Server ready. Press Ctrl+C to stop.");
 
-            // Keep the main thread alive. The RMI runtime threads would keep the
-            // JVM alive as well, but waiting explicitly makes the intent clear.
             new CountDownLatch(1).await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
