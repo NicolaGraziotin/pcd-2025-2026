@@ -15,9 +15,7 @@ import javax.swing.SwingUtilities;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 /**
- * Minimal interactive GUI for the reactive version: Start subscribes to the
- * live {@code Flowable<FSReport>}, Stop disposes it. Rx callbacks arrive on an
- * io thread, so every Swing update goes through {@code invokeLater} (EDT).
+ * Minimal interactive GUI for the reactive version.
  */
 public class GuiRx {
     public static void main(String[] args) {

@@ -19,16 +19,6 @@ import pcd.ass02.FSReport;
 
 /**
  * Reactive FS stat library (RxJava 3).
- *
- * <p>The directory tree becomes a
- * {@code Flowable<Path>}, file sizes a {@code Flowable<Long>}, the report a
- * {@code Single<FSReport>} reduction. No explicit threads, locks or counters:
- * concurrency is declared with {@code subscribeOn}/{@code flatMap} and
- * parallelism is delegated to {@code Schedulers.io()} (unbounded pool tuned
- * for blocking I/O). Aggregation via {@code collect}/{@code scan} is safe
- * without locks because Rx serializes downstream {@code onNext} calls.
- * Backpressure ({@code BUFFER}) absorbs bursts when traversal outruns stat.
- * Cancellation = dispose; progress = throttled snapshots of the scan.
  */
 public class FSStatLib {
 
@@ -47,11 +37,6 @@ public class FSStatLib {
             .map(Accumulator::snapshot);
     }
 
-    /**
-     * Live report for the GUI: a snapshot of the statistics at most every
-     * {@link #UPDATE_INTERVAL_MS} while the scan runs, plus the final one.
-     * Disposing the subscription stops the scan.
-     */
     public Flowable<FSReport> getFSReportUpdates(String rootDir, long maxFS, int nb) {
         return Flowable.defer(() -> {
             checkArgs(rootDir, maxFS, nb);
