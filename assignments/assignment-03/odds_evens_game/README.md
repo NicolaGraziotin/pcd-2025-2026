@@ -1,4 +1,4 @@
-# Startup instructions
+# Odds and Evens Game
 
 ## 1. Run the program:
 
